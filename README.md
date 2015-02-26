@@ -1,6 +1,6 @@
-# CrowdMotionCapture  
+# Crowd Motion Capture  
 
-### CMPUT 415 TEAM A  
+### CMPUT 414 TEAM A  
 Michael Feist  
 Benjamin Lavin  
 Maciej Ogrocki  
