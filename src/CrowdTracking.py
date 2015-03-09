@@ -3,7 +3,7 @@ import cv2
 import math
 import sys
 
-help = 'python3 CrowdTracking.py <video file>'
+help = 'Usage: python3 CrowdTracking.py <video file>'
 
 # Parameters
 maxCorners = 100
@@ -90,6 +90,15 @@ def getNewPoints(img, img_old, points):
 
     return points
 
+def getDistance(a, b, c, d):
+    dx = c-a
+    dy = d-b
+
+    dx2 = dx*dx
+    dy2 = dy*dy
+
+    return math.sqrt(dx2 + dy2)
+
 
 if __name__ == '__main__':
     print(help)
@@ -149,13 +158,10 @@ if __name__ == '__main__':
                                                **lk_params)
 
         if p1 != None:
-            st = findGoodPoints(p0, p1, tracks, st)
+            #st = findGoodPoints(p0, p1, tracks, st)
 
             good_new = p1[st==1]
             good_old = p0[st==1]
-
-    #       for i,track in enumerate(tracks):
-    #           track = track[st==1]
 
             # draw the tracks
             for i,(new,old) in enumerate(zip(good_new,good_old)):
@@ -168,18 +174,98 @@ if __name__ == '__main__':
         img = cv2.add(frame,mask)
 
         cv2.imshow('frame',img)
+
         k = cv2.waitKey(30) & 0xff
         if k == 27:
+            exit()
+        if k == 10:
             break
 
         # Now update the previous frame and previous points
         old_gray = frame_gray.copy()
         p0 = good_new.reshape(-1,1,2)
 
-        #if (len(tracks) > track_len):
-        #    tracks.pop(0)
-
         tracks.append(good_new.reshape(-1,1,2))
+
+
+    print("- Fixing Tracks")
+
+    track_threshold = 50
+
+    skip = []
+
+    # Loop over tracks
+    for i,points in enumerate(tracks):
+        # Skip first track
+        if i == 0:
+            continue
+
+        # Loop over previous track frame
+        for j,point in enumerate(tracks[i-1]):
+            if j in skip:
+                continue
+
+            print("Frame: ", i, " Point ", j)
+            new_track = True
+            if len(points) > j:
+                new_track = False
+
+                a,b = point.ravel()
+                c,d = points[j].ravel()
+
+                diff = getDistance(a, b, c, d)
+
+                if (diff >= track_threshold):
+                    new_track = True
+                    for k,new_point in enumerate(points):
+                        if k <= j:
+                            continue
+
+                        c,d = new_point.ravel()
+                        diff = getDistance(a, b, c, d)
+                        if (diff < track_threshold):
+                            for l in range(i,len(tracks)):
+                                if len(tracks[l]) - 1 < k:
+                                    break
+
+                                if len(tracks[l]) - 1 < j:
+                                    break
+
+                                tmp = tracks[l][k]
+                                tracks[l][k] = tracks[l][j]
+                                tracks[l][j] = tmp
+                            new_track = False
+                            break
+
+            if new_track and i < len(tracks):
+                print("- - New Track - -")
+                for k in range(i,len(tracks)):
+                    if len(tracks[k]) - 1 < j:
+                        break
+
+                    new_point = tracks[k][j]
+                    tracks[k][j] = point
+                    #skip.append(j)
+                    #tracks[k] = np.concatenate((tracks[k], 
+                    #                            np.array([new_point])))
+                print(len(points))
+
+    mask = np.zeros_like(old_frame)
+
+    old_points = tracks[0]
+    # draw the tracks
+    for i,points in enumerate(tracks):
+        for j,point in enumerate(old_points):
+            if len(points) <= j:
+                break
+            a,b = point.ravel()
+            c,d = points[j].ravel()
+            mask = cv2.line(mask, (a,b),(c,d), color[j].tolist(), 2)
+        old_points = points
+
+    img = cv2.add(np.uint8(0.5*old_frame), mask)
+    cv2.imshow('frame',img)
+    cv2.waitKey()
 
     cv2.destroyAllWindows()
     cap.release()
