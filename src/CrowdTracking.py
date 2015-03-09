@@ -23,6 +23,27 @@ distance2 = 2
 newPoints_on = True
 tracks_on = True
 
+def findGoodPoints(p0, p1, tracks, st):
+    # Select good points
+    for i,(new,old) in enumerate(zip(p1,p0)):
+        if (len(tracks) > track_len):
+            if (len(tracks[-track_len]) > i):
+                a,b = new.ravel()
+                c,d = tracks[-track_len][i].ravel()
+
+                dx = c-a
+                dy = d-b
+
+                dx2 = dx*dx
+                dy2 = dy*dy
+
+                diff = math.sqrt(dx2 + dy2)
+
+                if (diff < distance2):
+                    st[i] = 0
+
+    return st
+
 def getNewPoints(img, img_old, points):
     t = np.int16(frame_gray) - np.int16(old_gray)
 
@@ -128,23 +149,7 @@ if __name__ == '__main__':
                                                **lk_params)
 
         if p1 != None:
-            # Select good points
-            for i,(new,old) in enumerate(zip(p1,p0)):
-                if (len(tracks) > track_len):
-                    if (len(tracks[-track_len]) > i):
-                        a,b = new.ravel()
-                        c,d = tracks[-track_len][i].ravel()
-
-                        dx = c-a
-                        dy = d-b
-
-                        dx2 = dx*dx
-                        dy2 = dy*dy
-
-                        diff = math.sqrt(dx2 + dy2)
-
-                        if (diff < distance2):
-                            st[i] = 0
+            st = findGoodPoints(p0, p1, tracks, st)
 
             good_new = p1[st==1]
             good_old = p0[st==1]
