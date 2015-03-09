@@ -8,7 +8,7 @@ help = 'Usage: python3 CrowdTracking.py <video file>'
 # Parameters
 maxCorners = 100
 qualityLevel = 0.05
-minDistance = 20
+minDistance = 25
 blockSize = 7
 
 # Track Buffer Length
@@ -16,8 +16,8 @@ track_len = 10
 
 # Threshold
 threshold = 50
-distance = 5
-distance2 = 2
+distance = 10
+distance2 = 20
 
 # Find New Points
 newPoints_on = True
@@ -31,13 +31,7 @@ def findGoodPoints(p0, p1, tracks, st):
                 a,b = new.ravel()
                 c,d = tracks[-track_len][i].ravel()
 
-                dx = c-a
-                dy = d-b
-
-                dx2 = dx*dx
-                dy2 = dy*dy
-
-                diff = math.sqrt(dx2 + dy2)
+                diff = getDistance(a, b, c, d)
 
                 if (diff < distance2):
                     st[i] = 0
@@ -46,8 +40,6 @@ def findGoodPoints(p0, p1, tracks, st):
 
 def getNewPoints(img, img_old, points):
     t = np.int16(frame_gray) - np.int16(old_gray)
-
-    #mask2 = np.ones_like(frame_gray)
 
     mask2 = abs(t) > threshold
     mask2 = mask2.astype('uint8')
@@ -66,13 +58,7 @@ def getNewPoints(img, img_old, points):
                 a,b = new.ravel()
                 c,d = old.ravel()
 
-                dx = c-a
-                dy = d-b
-
-                dx2 = dx*dx
-                dy2 = dy*dy
-
-                diff = math.sqrt(dx2 + dy2)
+                diff = getDistance(a, b, c, d)
 
                 if (diff < distance):
                     found = True
@@ -123,7 +109,7 @@ if __name__ == '__main__':
                                  10, 0.03))
 
     # Create some random colors
-    color = np.random.randint(0,255,(2*maxCorners,3))
+    color = np.random.randint(0,255,(maxCorners,3))
 
     # Take first frame and find corners in it
     ret, old_frame = cap.read()
@@ -138,7 +124,9 @@ if __name__ == '__main__':
 
     # Store tracks
     tracks = []
+    tracks_index = []
 
+    frame_count = 0
     while(1):
         ret, frame = cap.read()
 
@@ -158,7 +146,7 @@ if __name__ == '__main__':
                                                **lk_params)
 
         if p1 != None:
-            #st = findGoodPoints(p0, p1, tracks, st)
+            st = findGoodPoints(p0, p1, tracks, st)
 
             good_new = p1[st==1]
             good_old = p0[st==1]
@@ -167,9 +155,10 @@ if __name__ == '__main__':
             for i,(new,old) in enumerate(zip(good_new,good_old)):
                 a,b = new.ravel()
                 c,d = old.ravel()
+                cv = i % maxCorners
                 if tracks_on:
-                    mask = cv2.line(mask, (a,b),(c,d), color[i].tolist(), 2)
-                frame = cv2.circle(frame,(a,b),5,color[i].tolist(),-1)
+                    mask = cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
+                frame = cv2.circle(frame,(a,b),5,color[cv].tolist(),-1)
 
         img = cv2.add(frame,mask)
 
@@ -185,70 +174,46 @@ if __name__ == '__main__':
         old_gray = frame_gray.copy()
         p0 = good_new.reshape(-1,1,2)
 
-        tracks.append(good_new.reshape(-1,1,2))
+        # Find add new points to tracks
+        if len(tracks) < 1:
+            tracks.append(p0)
+            tracks_index = [i for i in range(len(tracks))]
+        else:
+            # Find Valid Tracks for New Points
+            i = len(tracks)
+            tracks.append(tracks[i-1])
 
+            removed = 0
+            for j in range(len(st)):
+                index = j - removed
+                if index not in tracks_index:
+                    tracks_index.append(index)
 
-    print("- Fixing Tracks")
+                if st[j] == 0 and j <= max(tracks_index):
+                    removed = removed + 1
+                    try:
+                        index = tracks_index.index(j)
+                    except ValueError:
+                        print("ValueError: no value ", j)
+                        print(tracks_index)
+                        exit()
 
-    track_threshold = 50
+                    tracks_index[index] = -1
+                    for k in range(index+1,len(tracks_index)):
+                        tracks_index[k] = tracks_index[k] - 1
 
-    skip = []
+            for j,new in enumerate(p0):
+                index = tracks_index.index(j)
+                if index < len(tracks[i]):
+                    tracks[i][index] = new
+                else:
+                    tracks[i] = np.concatenate((tracks[i], np.array([new])))
 
-    # Loop over tracks
-    for i,points in enumerate(tracks):
-        # Skip first track
-        if i == 0:
-            continue
+            if len(tracks[i]) < len(tracks_index):
+                while max(tracks_index) >= len(p0):
+                    tracks_index.pop(-1)
 
-        # Loop over previous track frame
-        for j,point in enumerate(tracks[i-1]):
-            if j in skip:
-                continue
-
-            print("Frame: ", i, " Point ", j)
-            new_track = True
-            if len(points) > j:
-                new_track = False
-
-                a,b = point.ravel()
-                c,d = points[j].ravel()
-
-                diff = getDistance(a, b, c, d)
-
-                if (diff >= track_threshold):
-                    new_track = True
-                    for k,new_point in enumerate(points):
-                        if k <= j:
-                            continue
-
-                        c,d = new_point.ravel()
-                        diff = getDistance(a, b, c, d)
-                        if (diff < track_threshold):
-                            for l in range(i,len(tracks)):
-                                if len(tracks[l]) - 1 < k:
-                                    break
-
-                                if len(tracks[l]) - 1 < j:
-                                    break
-
-                                tmp = tracks[l][k]
-                                tracks[l][k] = tracks[l][j]
-                                tracks[l][j] = tmp
-                            new_track = False
-                            break
-
-            if new_track and i < len(tracks):
-                print("- - New Track - -")
-                for k in range(i,len(tracks)):
-                    if len(tracks[k]) - 1 < j:
-                        break
-
-                    new_point = tracks[k][j]
-                    tracks[k][j] = point
-                    #skip.append(j)
-                    #tracks[k] = np.concatenate((tracks[k], 
-                    #                            np.array([new_point])))
-                print(len(points))
+        frame_count = frame_count+1
 
     mask = np.zeros_like(old_frame)
 
@@ -260,7 +225,9 @@ if __name__ == '__main__':
                 break
             a,b = point.ravel()
             c,d = points[j].ravel()
-            mask = cv2.line(mask, (a,b),(c,d), color[j].tolist(), 2)
+
+            color_value = j % maxCorners
+            mask = cv2.line(mask, (a,b),(c,d), color[color_value].tolist(), 2)
         old_points = points
 
     img = cv2.add(np.uint8(0.5*old_frame), mask)
