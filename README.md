@@ -27,3 +27,7 @@ http://docs.opencv.org/trunk/doc/py_tutorials/py_video/py_lucas_kanade/py_lucas_
 6. Get Head Data for Object Dectection (optional)  
 7. Train Pedestrian Data (optional)
 8. Train Head Dectection Data (optional)
+
+### Week 3: March 16-20
+1. Reconstruct Metric Properties
+2. Calculate Speed of Pedestrains
