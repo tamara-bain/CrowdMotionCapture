@@ -2,6 +2,8 @@ import numpy as np
 import cv2
 import math
 import sys
+from TrackInfo import TrackInfo
+
 
 help = 'Usage: python3 CrowdTracking.py <video file>'
 
@@ -48,12 +50,12 @@ def getNewPoints(img, img_old, points):
     # If change is greater than threshold
     # Then set value to 1
     # Else set value to 0
-    mask2 = abs(t) > threshold
+    mask = abs(t) > threshold
     # Cast mask to unsigned byte
-    mask2 = mask2.astype('uint8')
+    mask = mask.astype('uint8')
 
     # Find good features to detect in areas of change
-    p_tmp = cv2.goodFeaturesToTrack(old_gray, mask = mask2, **feature_params)
+    p_tmp = cv2.goodFeaturesToTrack(old_gray, mask = mask, **feature_params)
 
     # If no points were given then return new points
     if points is None:
@@ -348,7 +350,7 @@ if __name__ == '__main__':
 
     new_points = [0] * len(tracks[-1])
 
-    # Split tracks that move more than 20 pixels between frames
+    # Kill tracks that move more than 20 pixels between frames
     for i in range(len(tracks)-1):
         n = len(tracks[i])
         for j,point in enumerate(tracks[i]):
@@ -363,7 +365,6 @@ if __name__ == '__main__':
             if diff > 20:
                 new_points[j] = 1
                 for k in range(i+1, len(tracks)):
-                    #tracks[k] = np.concatenate((tracks[k], np.array([tracks[k][j]])))
                     tracks[k][j] = point
 
     print(len(tracks[-1]))
@@ -408,6 +409,8 @@ if __name__ == '__main__':
 #                mask2 = cv2.circle(mask2,(a,b),5,color[cv].tolist(),-1)
 
     # Group Tracks
+    track_info = [TrackInfo()] * len(tracks[-1])
+    print(track_info)
 
     mask = np.zeros_like(old_frame)
 
