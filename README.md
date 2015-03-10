@@ -9,6 +9,8 @@ Tamara Bain
 ### Links:  
 http://docs.opencv.org/trunk/doc/py_tutorials/py_video/py_lucas_kanade/py_lucas_kanade.html  
 
+### Data:
+http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDataset.zip
 
 
 ### Week 1: March 2-6  
