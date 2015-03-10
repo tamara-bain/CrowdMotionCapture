@@ -6,18 +6,18 @@ import sys
 help = 'Usage: python3 CrowdTracking.py <video file>'
 
 # Parameters
-maxCorners = 100
-qualityLevel = 0.05
+maxCorners = 200
+qualityLevel = 0.1
 minDistance = 30
-blockSize = 7
+blockSize = 16
 
 # Track Buffer Length
-track_len = 10
+track_len = 20
 
 # Threshold
 threshold = 50
-distance = 10
-distance2 = 20
+distance = 5
+distance2 = 10
 
 # Find New Points
 newPoints_on = True
@@ -215,6 +215,92 @@ if __name__ == '__main__':
 
         frame_count = frame_count+1
 
+
+
+
+##### IN DEVELOMENT ######
+
+    # Clean up Tracks
+    print(len(tracks[-1]))
+    mask2 = np.zeros_like(old_frame)
+
+    for i in range(len(tracks)-1):
+        n = len(tracks[i])
+        new_points = np.zeros(n)
+        for j,point in enumerate(tracks[i]):
+            a,b = point.ravel()
+            c,d = tracks[i+1][j].ravel()
+
+            diff = getDistance(a, b, c, d)
+
+            if diff > 20:
+                new_points[j] = 1
+                for k in range(i+1, len(tracks)):
+                    tracks[k] = np.concatenate((tracks[k], np.array([tracks[k][j]])))
+                    tracks[k][j] = point
+
+    for i in range(1,len(tracks)):
+        # Find points that don't move anymore
+        dead_points = np.zeros(len(tracks[i]))
+        for j,point in enumerate(tracks[i]):
+            a,b = point.ravel()
+
+            dead_point = True
+
+            for k in range(i+1, len(tracks)):
+                c,d = tracks[k][j].ravel()
+
+                diff = getDistance(a, b, c, d)
+
+                if diff > distance/2.:
+                    print("Dead", j)
+                    dead_point = False
+                    break
+
+            if dead_point:
+                dead_points[j] = 1
+
+        for j in range(len(dead_points)):
+            if dead_points[j] == 1:
+                a,b = tracks[i][j].ravel()
+                cv = j % maxCorners
+                mask2 = cv2.circle(mask2,(a,b),5,color[cv].tolist(),-1)
+
+#        shift = 0
+#        for j in range(len(tracks[i-1]), len(tracks[i])):
+#            index = j - shift
+#            a,b = tracks[i][j].ravel()
+#            for k in range(len(tracks[i-1])):
+#                if dead_points[k] == 1:
+#                    shift = shift + 1
+#                    c,d = tracks[i][k].ravel()
+#
+#                    diff = getDistance(a, b, c, d)
+#
+#                    if diff < distance:
+#                        for l in range(i+1, len(tracks)):
+#                            tracks[l][k] = tracks[l][j]
+#                            tracks[l] = np.delete(tracks[l], j, 0)
+#                        break
+
+    print(len(tracks[-1]))
+    
+#    for i in range(len(tracks)-1):
+#        n = len(tracks[i])
+#        new_points = np.zeros(n)
+#        for j,point in enumerate(tracks[i]):
+#            a,b = point.ravel()
+#            c,d = tracks[i+1][j].ravel()
+#
+#            diff = getDistance(a, b, c, d)
+#
+#            if diff > 20:
+#                new_points[j] = 1
+#                for k in range(i+1, len(tracks)):
+#                    tracks[k][j] = point
+#
+    print(len(tracks[-1]))
+
     # Group Tracks
 
     mask = np.zeros_like(old_frame)
@@ -222,6 +308,9 @@ if __name__ == '__main__':
     old_points = tracks[0]
     # draw the tracks
     for i,points in enumerate(tracks):
+        if i == 0:
+            continue
+
         for j,point in enumerate(old_points):
             if len(points) <= j:
                 break
@@ -233,6 +322,8 @@ if __name__ == '__main__':
         old_points = points
 
     img = cv2.add(np.uint8(0.5*old_frame), mask)
+    img = cv2.add(img, mask2)
+
     cv2.imshow('frame',img)
     cv2.waitKey()
 
