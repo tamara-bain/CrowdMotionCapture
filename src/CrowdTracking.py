@@ -8,7 +8,7 @@ help = 'Usage: python3 CrowdTracking.py <video file>'
 # Parameters
 maxCorners = 100
 qualityLevel = 0.05
-minDistance = 25
+minDistance = 30
 blockSize = 7
 
 # Track Buffer Length
@@ -25,8 +25,8 @@ tracks_on = True
 
 def findGoodPoints(p0, p1, tracks, st):
     # Select good points
-    for i,(new,old) in enumerate(zip(p1,p0)):
-        if (len(tracks) > track_len):
+    if (len(tracks) > track_len):
+        for i,(new,old) in enumerate(zip(p1,p0)):
             if (len(tracks[-track_len]) > i):
                 a,b = new.ravel()
                 c,d = tracks[-track_len][i].ravel()
@@ -214,6 +214,8 @@ if __name__ == '__main__':
                     tracks_index.pop(-1)
 
         frame_count = frame_count+1
+
+    # Group Tracks
 
     mask = np.zeros_like(old_frame)
 
