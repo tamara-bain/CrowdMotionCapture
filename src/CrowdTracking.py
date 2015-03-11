@@ -346,32 +346,43 @@ if __name__ == '__main__':
 
     # Clean up Tracks
     print(len(tracks[-1]))
-    mask2 = np.zeros_like(old_frame)
-
-    new_points = [0] * len(tracks[-1])
 
     # Kill tracks that move more than 20 pixels between frames
+
+    # Keep track of tracks that ended
+    tracks_ended = [0] * len(tracks[-1])
+
+    # Loop through tracks
     for i in range(len(tracks)-1):
+        # Get current number of points in track
         n = len(tracks[i])
+
+        # Loop through points
         for j,point in enumerate(tracks[i]):
-            if new_points[j] == 1:
+            # If track has ended skip new point
+            if tracks_ended[j] == 1:
                 continue
 
+            # Calculate distance between current point
+            # and next point
             a,b = point.ravel()
             c,d = tracks[i+1][j].ravel()
 
             diff = getDistance(a, b, c, d)
 
+            # If point moved more than 20 pixels then we 
+            # kill the current track
             if diff > 20:
-                new_points[j] = 1
+                tracks_ended[j] = 1
                 for k in range(i+1, len(tracks)):
                     tracks[k][j] = point
 
-    print(len(tracks[-1]))
+
+    track_info = [TrackInfo() for i in range(len(tracks[-1]))]
 
     dead_points = [0] * len(tracks[-1])
     dead_points_time = [0] * len(tracks[-1])
-    for i in range(1,len(tracks)):
+    for i in range(0,len(tracks)):
         # Update time
         for j in range(len(dead_points)):
             if dead_points[j] == 1:
@@ -382,10 +393,16 @@ if __name__ == '__main__':
         # Find points that don't move anymore
         # and mark as dead
         for j,point in enumerate(tracks[i]):
+            track = track_info[j]
+            track.start(i)
+
             if dead_points[j] == 1:
+                track.end(i)
                 continue
 
             a,b = point.ravel()
+
+            track.addPoint(a,b)
 
             dead_point = True
 
@@ -394,23 +411,16 @@ if __name__ == '__main__':
 
                 diff = getDistance(a, b, c, d)
 
-                if diff > distance/2.:
+                if diff > distance:
                     dead_point = False
                     break
 
             if dead_point:
                 dead_points[j] = 1
 
-#        # Draw Circles Where Dead
-#        for j in range(len(dead_points)):
-#            if dead_points[j] == 1:
-#                a,b = tracks[i][j].ravel()
-#                cv = j % maxCorners
-#                mask2 = cv2.circle(mask2,(a,b),5,color[cv].tolist(),-1)
 
+    print(len(tracks[-1]))
     # Group Tracks
-    track_info = [TrackInfo()] * len(tracks[-1])
-    print(track_info)
 
     mask = np.zeros_like(old_frame)
 

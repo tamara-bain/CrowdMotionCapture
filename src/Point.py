@@ -9,6 +9,9 @@ class Point:
 		self.x = x
 		self.y = y
 
+	def getCoords(self):
+		return x, y
+
 	def normalize(self):
 		x2 = self.x*self.x
 		y2 = self.y*self.y
