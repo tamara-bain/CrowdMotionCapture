@@ -21,9 +21,9 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 5. Find Sample Video (Top/Side)
 
 ### Week 2: March 9-13  
-1. Create Simple Test Video 
+1. Create Simple Test Video  **(DONE)**
 2. Find Sample Video (Top/Side) **(DONE)**
-3. Group Tracks, from Lucas-Kanade together, that belong to the same point together
+3. Group Tracks, from Lucas-Kanade together, that belong to the same point together  **(DONE)**
 4. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction (optional)
 5. Get Pedestrian Data for Object Dectection (optional)
 6. Get Head Data for Object Dectection (optional)  
@@ -33,3 +33,8 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 ### Week 3: March 16-20
 1. Reconstruct Metric Properties
 2. Calculate Speed of Pedestrains
+3. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction
+4. Get Pedestrian Data for Object Dectection (optional)
+5. Get Head Data for Object Dectection (optional)  
+6. Train Pedestrian Data (optional)
+7. Train Head Dectection Data (optional)
