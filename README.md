@@ -22,7 +22,7 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 
 ### Week 2: March 9-13  
 1. Create Simple Test Video 
-2. Find Sample Video (Top/Side) 
+2. Find Sample Video (Top/Side) **(DONE)**
 3. Group Tracks, from Lucas-Kanade together, that belong to the same point together
 4. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction (optional)
 5. Get Pedestrian Data for Object Dectection (optional)
