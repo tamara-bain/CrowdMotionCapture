@@ -378,6 +378,8 @@ if __name__ == '__main__':
                     tracks[k][j] = point
 
 
+    # Store information for each track
+    # See: TrackInfo() for more info
     track_info = [TrackInfo() for i in range(len(tracks[-1]))]
 
     dead_points = [0] * len(tracks[-1])
@@ -419,7 +421,14 @@ if __name__ == '__main__':
                 dead_points[j] = 1
 
 
+    # Combine tracks?
+
+    # Delete short tracks
+
+    # Calclate direction
+
     print(len(tracks[-1]))
+
     # Group Tracks
 
     mask = np.zeros_like(old_frame)
