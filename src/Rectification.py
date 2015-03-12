@@ -51,35 +51,34 @@ def AffineRectification(lines):
 	v2 = np.cross(m1, m2)
 
 	vanishL = np.cross(v1, v2)
+	print(vanishL)
 
-	vanishL[0][0] = vanishL[0][0]/vanishL[0][2]
-	vanishL[0][1] = vanishL[0][1]/vanishL[0][2]
-	vanishL[0][2] = 1.0
+	vanishL[0] = vanishL[0]/vanishL[2]
+	vanishL[1] = vanishL[1]/vanishL[2]
+	vanishL[2] = 1.0
 
 	H1 = np.eye(3)
-	H1[2][0] = vanishL[0][0]
-	H1[2][1] = vanishL[0][1]
-	H1[2][2] = vanishL[0][2]
+	H1[2][0] = vanishL[0]
+	H1[2][1] = vanishL[1]
+	H1[2][2] = vanishL[2]
 
 	return H1
 
 
 def MetricRectification(lines):
-	print(lines)
-
 	l1 = np.cross(lines[0],lines[1])
 	l2 = np.cross(lines[2],lines[3])
 	m1 = np.cross(lines[4],lines[5])
 	m2 = np.cross(lines[6],lines[7])
 
-	l11 = l1[0][0]
-	l12 = l1[0][1]
-	l21 = l2[0][0]
-	l22 = l2[0][1]
-	m11 = m1[0][0]
-	m12 = m1[0][1]
-	m21 = m2[0][0]
-	m22 = m2[0][1]
+	l11 = l1[0]
+	l12 = l1[1]
+	l21 = l2[0]
+	l22 = l2[1]
+	m11 = m1[0]
+	m12 = m1[1]
+	m21 = m2[0]
+	m22 = m2[1]
 
 	M = np.zeros((2,2))
 	b = np.zeros((2,1))
@@ -89,15 +88,15 @@ def MetricRectification(lines):
 	M[1][0] = l21*m21
 	M[1][1] = l21*m22 + l22*m21
 
-	b[0][0] = -l12*m12
-	b[1][0] = -l22*m22
+	b[0] = -l12*m12
+	b[1] = -l22*m22
 
 	x = np.linalg.solve(M, b)
 
 	S  = np.eye(2)
-	S[0][0] = x[0][0]
-	S[0][1] = x[1][0]
-	S[1][0] = x[1][0]
+	S[0][0] = x[0]
+	S[0][1] = x[1]
+	S[1][0] = x[1]
 
 	U,D,V = np.linalg.svd(S)
 
@@ -106,8 +105,6 @@ def MetricRectification(lines):
 
 	A = U_T*sqrtD
 	A = A*V
-
-	print(A)
 
 	H2 = np.eye(3)
 	H2[0][0] = A[0][0]
@@ -123,74 +120,58 @@ def MetricRectification(lines):
 
 	invH2 = np.linalg.inv(H2)
 
-#	scale = 2.0
-#	angle = -0.2
-#	R = np.eye(3)
-#	R[0][0] = scale*math.cos(angle)
-#	R[0][1] = -scale*math.sin(angle)
-#	R[1][0] = scale*math.sin(angle)
-#	R[1][1] = scale*math.cos(angle)
-#
-#	H = R*invH2
-#
-#	print(R)
-#	print(H)
-
 	return invH2
 
+def getRectification(img):
+		#cv2.imshow('Original', img)
 
-# Test
-if __name__ == '__main__':
-	if len(sys.argv) < 2:
-		print(help)
-		img = cv2.imread('../Images/Test/floor.jpg')
-	else:
-		img = cv2.imread(sys.argv[1])
+	lines = getLines(img)
 
-	cv2.imshow('Original', img)
-
-	#lines = getLines(affine_img_retification)
-
-	lines = np.matrix('220. 299. 1.; \
-					   499. 36. 1.; \
-					   257. 388. 1.; \
-					   527. 98. 1.; \
-					   160. 169. 1.; \
-					   494. 256. 1.; \
-					   214. 29. 1.; \
-					   449. 83. 1.')
+#	lines = np.matrix('220. 299. 1.; \
+#					   499. 36. 1.; \
+#					   257. 388. 1.; \
+#					   527. 98. 1.; \
+#					   160. 169. 1.; \
+#					   494. 256. 1.; \
+#					   214. 29. 1.; \
+#					   449. 83. 1.')
 
 	H1 = AffineRectification(lines)
 
 	affine_img_retification = cv2.warpPerspective(img, H1, (img.shape[1], img.shape[0]))
 
-	cv2.imshow('Affine Retification', affine_img_retification)
+#	cv2.imshow('Affine Retification', affine_img_retification)
 
-	#lines = getLines(affine_img_retification)
+	lines = getLines(affine_img_retification)
 
-	lines = np.matrix('216. 91. 1.; \
-				   339. 123. 1.; \
-				   424. 78. 1.; \
-				   249. 169. 1.; \
-				   307. 50. 1.; \
-				   340. 123. 1.; \
-				   215. 93. 1.; \
-				   425. 78. 1.')
+#	lines = np.matrix('216. 91. 1.; \
+#				   339. 123. 1.; \
+#				   424. 78. 1.; \
+#				   249. 169. 1.; \
+#				   307. 50. 1.; \
+#				   340. 123. 1.; \
+#				   215. 93. 1.; \
+#				   425. 78. 1.')
 
 	H2 = MetricRectification(lines)
 	H3 = H2*H1
 
-	metric_img_retification = cv2.warpPerspective(affine_img_retification, H3, (img.shape[1], img.shape[0]))
+#	metric_img_retification = cv2.warpPerspective(affine_img_retification, H3, (img.shape[1], img.shape[0]))
 
-	cv2.imshow('Metric Retification', metric_img_retification)
+#	cv2.imshow('Metric Retification', metric_img_retification)
 
 	cv2.namedWindow('image')
 	cv2.createTrackbar('Angle','image',0,360,nothing)
 	cv2.createTrackbar('Scale','image',0,5000,nothing)
+	cv2.createTrackbar('X','image',-img.shape[0],img.shape[0],nothing)
+	cv2.createTrackbar('Y','image',-img.shape[1],img.shape[1],nothing)
 
 	while(1):
 		angle = cv2.getTrackbarPos('Angle','image')
 		scale = cv2.getTrackbarPos('Scale','image')
+
+		x = cv2.getTrackbarPos('X','image')
+		y = cv2.getTrackbarPos('Y','image')
 
 		s = scale/1000.
 		r = math.radians(angle)
@@ -200,17 +181,47 @@ if __name__ == '__main__':
 		R[0][1] = -s*math.sin(r)
 		R[1][0] = s*math.sin(r)
 		R[1][1] = s*math.cos(r)
-		R[0][2] = img.shape[0]/2.
-		R[1][2] = img.shape[1]/2.
+		R[0][2] = x
+		R[1][2] = y
 
-		H = R
+		H = np.dot(H3, H1)
 
-		img2 = cv2.warpPerspective(metric_img_retification, H, (img.shape[1], img.shape[0]))
+		center_1 = np.ones((3, 1))
+		center_1[0][0] = img.shape[0]/2.
+		center_1[1][0] = img.shape[1]/2.
+
+		center_2 = np.dot(H, center_1)
+
+		T = np.eye(3)
+
+		T[0][2] = -center_2[0][0]/2.
+		T[1][2] = -center_2[1][0]/2.
+
+		R = np.dot(R,T)
+		H = np.dot(R,H)
+
+		img2 = cv2.warpPerspective(img, H, (img.shape[1], img.shape[0]))
 		
 		cv2.imshow('image', img2)
 
 		k = cv2.waitKey(30) & 0xFF
 		if k == 27:
+			exit()
+		if k == 10:
 			break
+
+	cv2.destroyWindow('image')
+
+	return H
+
+# Test
+if __name__ == '__main__':
+	if len(sys.argv) < 2:
+		print(help)
+		img = cv2.imread('../Images/Test/floor.jpg')
+	else:
+		img = cv2.imread(sys.argv[1])
+
+	getRectification(img)
 
 	cv2.waitKey()

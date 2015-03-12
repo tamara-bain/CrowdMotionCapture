@@ -3,6 +3,7 @@ import cv2
 import math
 import sys
 from TrackInfo import TrackInfo
+from Rectification import getRectification
 
 
 help = 'Usage: python3 CrowdTracking.py <video file>'
@@ -149,6 +150,9 @@ if __name__ == '__main__':
     # Take first frame
     ret, old_frame = cap.read()
     old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
+
+    # Get rectification matrix
+    # H = getRectification(old_frame)
 
     # Take second frame
     ret, frame = cap.read()
