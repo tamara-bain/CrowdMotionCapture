@@ -436,6 +436,10 @@ if __name__ == '__main__':
             track_info.pop(index)
 
     # Calclate direction
+    n = len(track_info)
+    for i in range(n):
+        track_info[i].calcDirection()
+
 
     # Group Tracks
 
@@ -458,7 +462,6 @@ if __name__ == '__main__':
 
     # Reset Video
     cap.set(1, 0)
-
 
     frame_count = 0
     while(1):

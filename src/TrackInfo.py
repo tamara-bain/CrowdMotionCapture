@@ -39,6 +39,21 @@ class TrackInfo:
 	def addPoint(self, x, y):
 		self.points.append(Point(x,y))
 
+	def calcDirection(self):
+		del self.direction[:]
+		n = len(self.points)
+		for i in range(1,n):
+			a,b = self.points[i-1].getCoords()
+			c,d = self.points[i].getCoords()
+
+			dx = c - a
+			dy = d - b
+
+			d = Point(dx, dy)
+			d.normalize()
+
+			self.direction.append(d)
+
 	def getDistanceTraveled(self):
 		num_of_points = len(self.points)
 

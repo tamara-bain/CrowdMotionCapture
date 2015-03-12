@@ -1,4 +1,4 @@
-
+import math
 
 class Point:
 	def __init__(self, x, y):
@@ -16,7 +16,7 @@ class Point:
 		x2 = self.x*self.x
 		y2 = self.y*self.y
 
-		length = sqrt(x2+y2)
+		length = math.sqrt(x2+y2)
 
 		self.x = self.x/length
 		self.y = self.y/length
