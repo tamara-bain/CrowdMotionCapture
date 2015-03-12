@@ -14,7 +14,7 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 
 
 ### Week 1: March 2-6  
-1. Setup - Install OpenCV 2 and Python 3.x - Create GitHub Repo  **(DONE)**
+1. Setup - Install OpenCV 2 and Python 3.x - Create GitHub Repo **(DONE)**
 2. Get Optic Flow Working on Video **(DONE)**
 3. Get Lucas-Kanade Working on Video **(DONE)**
 4. Create Simple Test Video (optional)  
@@ -31,7 +31,7 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 8. Train Head Dectection Data (optional)
 
 ### Week 3: March 16-20
-1. Reconstruct Metric Properties
+1. Reconstruct Metric Properties **(DONE)**
 2. Calculate Speed of Pedestrains
 3. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction
 4. Get Pedestrian Data for Object Dectection (optional)
