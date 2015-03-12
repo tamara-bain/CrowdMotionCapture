@@ -1,4 +1,5 @@
 from Point import Point
+import math
 
 # Calculates the distance between two points
 def getDistance(a, b, c, d):
@@ -31,6 +32,9 @@ class TrackInfo:
 
 	def active(self):
 		return self.started and not self.ended
+
+	def getNumberOfFrames(self):
+		return self.endFrame - self.startFrame
 
 	def addPoint(self, x, y):
 		self.points.append(Point(x,y))

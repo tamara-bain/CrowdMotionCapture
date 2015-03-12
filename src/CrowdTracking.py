@@ -345,8 +345,6 @@ if __name__ == '__main__':
 ##### IN DEVELOMENT ######
 
     # Clean up Tracks
-    print(len(tracks[-1]))
-
     # Kill tracks that move more than 20 pixels between frames
 
     # Keep track of tracks that ended
@@ -408,6 +406,7 @@ if __name__ == '__main__':
 
             dead_point = True
 
+            # Check if point moves
             for k in range(i+1, len(tracks)):
                 c,d = tracks[k][j].ravel()
 
@@ -424,33 +423,31 @@ if __name__ == '__main__':
     # Combine tracks?
 
     # Delete short tracks
+    n = len(track_info)
+    for i in range(n):
+        index = n - i - 1
+        track = track_info[index]
+        diff = track.getDistanceTraveled()
+        if diff < distance2:
+            track_info.pop(index)
 
     # Calclate direction
-
-    print(len(tracks[-1]))
 
     # Group Tracks
 
     mask = np.zeros_like(old_frame)
 
-    old_points = tracks[0]
     # draw the tracks
-    for i,points in enumerate(tracks):
-        if i == 0:
-            continue
+    for i,track in enumerate(track_info):
+        frames = track.getNumberOfFrames()
+        for j in range(1,frames):
+            a,b = track.points[j-1].getCoords()
+            c,d = track.points[j].getCoords()
 
-        for j,point in enumerate(old_points):
-            if len(points) <= j:
-                break
-            a,b = point.ravel()
-            c,d = points[j].ravel()
-
-            color_value = j % maxCorners
-            mask = cv2.line(mask, (a,b),(c,d), color[color_value].tolist(), 2)
-        old_points = points
+            cv = i % maxCorners
+            mask = cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
 
     img = cv2.add(np.uint8(0.5*old_frame), mask)
-    img = cv2.add(img, mask2)
 
     cv2.imshow('tracks', img)
     cv2.waitKey()
@@ -458,21 +455,42 @@ if __name__ == '__main__':
     # Reset Video
     cap.set(1, 0)
 
+
+    frame_count = 0
     while(1):
         ret, frame = cap.read()
 
         if not ret:
             break;
 
-        #img = cv2.add(frame,mask)
+        mask = np.zeros_like(frame)
+        # draw the tracks
+        for i,track in enumerate(track_info):
+            if track.startFrame <= frame_count and track.endFrame > frame_count:
+                frames = track.getNumberOfFrames()
+                for j in range(0,10):
+                    index = frame_count - track.startFrame - j
 
-        cv2.imshow('frame', frame)
+                    if index <= 0:
+                        break
+
+                    a,b = track.points[index-1].getCoords()
+                    c,d = track.points[index].getCoords()
+
+                    cv = i % maxCorners
+                    mask = cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
+
+        img = cv2.add(np.uint8(0.5*frame), mask)
+
+        cv2.imshow('frame', img)
 
         k = cv2.waitKey(30) & 0xff
         if k == 27:
             exit()
         if k == 10:
             break
+
+        frame_count = frame_count + 1
 
     cv2.destroyAllWindows()
     cap.release()
