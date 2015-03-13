@@ -1,3 +1,4 @@
+import numpy as np
 import math
 
 class Point:
@@ -8,6 +9,13 @@ class Point:
 	def set(self, x, y):
 		self.x = x
 		self.y = y
+
+	def applyMatrix(self, A):
+		p = np.matrix([[self.x], [self.y], [1]])
+		p = A*p
+
+		self.x = p[0]/p[2]
+		self.y = p[1]/p[2]
 
 	def getCoords(self):
 		return self.x, self.y

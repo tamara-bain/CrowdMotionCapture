@@ -21,7 +21,7 @@ track_len = 120
 # Threshold
 threshold = 50
 distance = 2.5
-distance2 = 20
+distance2 = 7.5
 
 # Max Energy
 max_energy = 7.0
@@ -156,7 +156,14 @@ if __name__ == '__main__':
     old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
 
     # Get rectification matrix
-    # H = getRectification(old_frame)
+    print('Instructions:')
+    print('1: You need to pick two pairs of parallel lines.')
+    print('   Each line requires two points. To get a point')
+    print('   point you have to double click. Once the 4')
+    print('   lines are selected press the return key.')
+    print('2: Repeat the process but with two pairs of')
+    print('   orthoganal lines.')
+    H = getRectification(old_frame)
 
     # Take second frame
     ret, frame = cap.read()
@@ -428,6 +435,12 @@ if __name__ == '__main__':
                 dead_points[j] = 1
 
 
+    # Apply Rectification to Points
+    n = len(track_info)
+    for i in range(n):
+        track = track_info[i]
+        track.applyMatrix(H)
+
     # Combine tracks?
 
     # Delete short tracks
@@ -492,6 +505,7 @@ if __name__ == '__main__':
             cap.set(1, 0)
             continue
 
+        frame = cv2.warpPerspective(frame, H, (frame.shape[1], frame.shape[0]))
         mask = np.zeros_like(frame)
         mask2 = np.zeros((512, 512, 3))
 

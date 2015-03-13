@@ -39,6 +39,11 @@ class TrackInfo:
 	def addPoint(self, x, y):
 		self.points.append(Point(x,y))
 
+	def applyMatrix(self, A):
+		n = len(self.points)
+		for i in range(0,n):
+			self.points[i].applyMatrix(A)
+
 	def doesMotionStop(self):
 		n = len(self.points)
 		l = 3
@@ -87,6 +92,10 @@ class TrackInfo:
 			speed.append(d)
 
 		n = len(speed)
+
+		if n == 0:
+			return 0
+			
 		e = Point(0, 0)
 		mx = my = 0
 		for i in range(0,n):
