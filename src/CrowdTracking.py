@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import math
 import sys
+from Point import Point
 from TrackInfo import TrackInfo
 from Rectification import getRectification
 
@@ -9,18 +10,21 @@ from Rectification import getRectification
 help = 'Usage: python3 CrowdTracking.py <video file>'
 
 # Parameters
-maxCorners = 100
-qualityLevel = 0.05
-minDistance = 50
-blockSize = 7
+maxCorners = 300
+qualityLevel = 0.1
+minDistance = 20
+blockSize = 3
 
 # Track Buffer Length
-track_len = 60
+track_len = 120
 
 # Threshold
 threshold = 50
 distance = 2.5
 distance2 = 20
+
+# Max Energy
+max_energy = 7.0
 
 # Find New Points
 newPoints_on = True
@@ -435,11 +439,26 @@ if __name__ == '__main__':
         if diff < distance2:
             track_info.pop(index)
 
-    # Calclate direction
+    # Calclate energy
+    n = len(track_info)
+    for i in range(n):
+        index = n - i - 1
+        e = track_info[index].calcMotionEnergy()
+#        print("Track ", index, " has energy ", e)
+        if e > max_energy:
+            track_info.pop(index)
+
+    # Does track stop
+#    n = len(track_info)
+#    for i in range(n):
+#        index = n - i - 1
+#        if track_info[index].doesMotionStop():
+#            track_info.pop(index)
+
+    # Calculate direction
     n = len(track_info)
     for i in range(n):
         track_info[i].calcDirection()
-
 
     # Group Tracks
 
@@ -464,13 +483,18 @@ if __name__ == '__main__':
     cap.set(1, 0)
 
     frame_count = 0
+    grid = 0
     while(1):
         ret, frame = cap.read()
 
         if not ret:
-            break;
+            frame_count = 0
+            cap.set(1, 0)
+            continue
 
         mask = np.zeros_like(frame)
+        mask2 = np.zeros((512, 512, 3))
+
         # draw the tracks
         for i,track in enumerate(track_info):
             if track.startFrame <= frame_count and track.endFrame > frame_count:
@@ -485,17 +509,61 @@ if __name__ == '__main__':
                     c,d = track.points[index].getCoords()
 
                     cv = i % maxCorners
-                    mask = cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
+                    mask = cv2.line(mask, (a,b), (c,d), color[cv].tolist(), 2)
+
+        grid_size = 5
+        vector_size = 20
+        for x in range(grid_size):
+            for y in range(grid_size):
+                p = Point(56+100*x,56+100*y)
+                i = grid_size*y + x + grid*grid_size*grid_size
+
+                if i >= len(track_info):
+                    break
+
+                track = track_info[i]
+
+                a = c = p.x
+                b = d = p.y
+
+                if track.startFrame <= frame_count and track.endFrame > frame_count:
+                    index = frame_count - track.startFrame
+
+                    if index < len(track.direction):
+                        d = track.direction[index]
+                        dx = vector_size*d.x
+                        dy = vector_size*d.y
+
+                        c = p.x + dx
+                        d = p.y + dy
+                
+                cv = int(i % maxCorners)
+                a = int(a)
+                b = int(b)
+                c = int(c)
+                d = int(d)
+                mask2 = cv2.line(mask2, (a,b), (c,d), color[cv].tolist(), 2)
 
         img = cv2.add(np.uint8(0.5*frame), mask)
 
         cv2.imshow('frame', img)
+        cv2.imshow('direction', mask2)
 
         k = cv2.waitKey(30) & 0xff
         if k == 27:
             exit()
         if k == 10:
             break
+        if k == 81:
+            if grid > 0:
+                grid = grid - 1
+            print("less ", grid)
+        if k == 83:
+            if grid*grid_size*grid_size < len(track_info):
+                grid = grid + 1
+            print("more ", grid)
+            print(len(track_info))
+            print(grid*grid_size*grid_size)
 
         frame_count = frame_count + 1
 
