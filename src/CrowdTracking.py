@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.interpolate import UnivariateSpline
 import cv2
 import math
 import sys
@@ -163,7 +164,9 @@ if __name__ == '__main__':
     print('   lines are selected press the return key.')
     print('2: Repeat the process but with two pairs of')
     print('   orthoganal lines.')
-    H = getRectification(old_frame)
+
+    # H = getRectification(old_frame)
+    H = np.eye(3)
 
     # Take second frame
     ret, frame = cap.read()
@@ -189,7 +192,7 @@ if __name__ == '__main__':
 
         # Check if read was successful
         if not ret:
-            break;
+            break
 
         # Convert frame to gray scale
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -475,7 +478,8 @@ if __name__ == '__main__':
 
     # Group Tracks
 
-    mask = np.zeros_like(old_frame)
+    old_frame_warp = cv2.warpPerspective(old_frame, H, (old_frame.shape[1], old_frame.shape[0]))
+    mask = np.zeros_like(old_frame_warp)
 
     # draw the tracks
     for i,track in enumerate(track_info):
@@ -487,9 +491,69 @@ if __name__ == '__main__':
             cv = i % maxCorners
             mask = cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
 
-    img = cv2.add(np.uint8(0.5*old_frame), mask)
+    img = cv2.add(np.uint8(0.5*old_frame_warp), mask)
 
     cv2.imshow('tracks', img)
+
+    track_i = 0
+
+    while(1):
+        track = track_info[track_i]
+        frames = track.getNumberOfFrames()
+        X = np.zeros(frames)
+        Y = np.zeros(frames)
+        
+        for i in range(0,frames):
+            a,b = track.points[i].getCoords()
+            X[i] = a
+            Y[i] = b
+
+
+        p3 = np.poly1d(np.polyfit(X, Y, 3))
+        p1 = np.poly1d(np.polyfit(X, Y, 1))
+
+        mask = np.zeros_like(old_frame_warp)
+
+        for i in range(mask.shape[1]):
+            j1 = p1(i)
+            j3 = p3(i)
+
+            if j1 != j1 or j3 != j3:
+                continue
+
+            if j1 >= 0 or j1 <= mask.shape[0]:
+                j = int(j1)
+                mask = cv2.circle(mask, (i,j), 1, (255, 0, 0), 2)
+
+            if j3 >= 0 or j3 <= mask.shape[0]:
+                j = int(j3)
+                mask = cv2.circle(mask, (i,j), 1, (0, 255, 0), 2)
+            
+
+        for i in range(1,frames):
+            a,b = track.points[i-1].getCoords()
+            c,d = track.points[i].getCoords()
+
+            cv = track_i % maxCorners
+            mask = cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
+
+
+        img = cv2.add(np.uint8(0.5*old_frame_warp), mask)
+
+        cv2.imshow('track', img)
+
+        k = cv2.waitKey(30) & 0xff
+        if k == 27:
+            exit()
+        if k == 10:
+            break
+        if k == 81:
+            if track_i > 0:
+                track_i = track_i - 1
+        if k == 83:
+            if track_i < len(track_info):
+                track_i = track_i + 1
+
     cv2.waitKey()
 
     # Reset Video
@@ -571,13 +635,9 @@ if __name__ == '__main__':
         if k == 81:
             if grid > 0:
                 grid = grid - 1
-            print("less ", grid)
         if k == 83:
             if grid*grid_size*grid_size < len(track_info):
                 grid = grid + 1
-            print("more ", grid)
-            print(len(track_info))
-            print(grid*grid_size*grid_size)
 
         frame_count = frame_count + 1
 
