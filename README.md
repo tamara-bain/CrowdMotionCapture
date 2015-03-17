@@ -34,7 +34,7 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 1. Reconstruct Metric Properties **(DONE)**
 2. Calculate Speed of Pedestrains
 3. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction
-4. Get Pedestrian Data for Object Dectection (optional)
+4. Get Pedestrian Data for Object Dectection (optional) **(DONE)**
 5. Get Head Data for Object Dectection (optional)  
-6. Train Pedestrian Data (optional)
+6. Train Pedestrian Data (optional) **(IN PROGRESS)**
 7. Train Head Dectection Data (optional)
