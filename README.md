@@ -39,7 +39,7 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 6. Train Pedestrian Data (optional) **(DONE)**
 7. Train Head Dectection Data (optional)
  
-### Week 3: March 23-27
+### Week 4: March 23-27
 1. Calculate Speed of Pedestrains
 2. Calcualte the flow of a crowd
 3. Calculate the density of a crowd
