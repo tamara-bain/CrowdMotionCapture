@@ -36,14 +36,15 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 3. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction
 4. Get Pedestrian Data for Object Dectection (optional) **(DONE)**
 5. Get Head Data for Object Dectection (optional)  
-6. Train Pedestrian Data (optional) **(IN PROGRESS)**
+6. Train Pedestrian Data (optional) **(DONE)**
 7. Train Head Dectection Data (optional)
-8. 
-### Week 3: March 16-20
+ 
+### Week 3: March 23-27
 1. Calculate Speed of Pedestrains
 2. Calcualte the flow of a crowd
 3. Calculate the density of a crowd
 4. Get video of the LRT station
-2. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction (optional)
-3. Get Head Data for Object Dectection (optional)  
-4. Train Head Dectection Data (optional)
+5. Test results of pedestrian training
+6. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction (optional)
+7. Get Head Data for Object Dectection (optional)  
+8. Train Head Dectection Data (optional)
