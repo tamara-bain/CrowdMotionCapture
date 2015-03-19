@@ -40,8 +40,6 @@ def getLines(img):
 	return lines
 
 def AffineRectification(lines):
-	print(lines)
-
 	l1 = np.cross(lines[0],lines[1])
 	l2 = np.cross(lines[2],lines[3])
 	m1 = np.cross(lines[4],lines[5])
@@ -51,7 +49,6 @@ def AffineRectification(lines):
 	v2 = np.cross(m1, m2)
 
 	vanishL = np.cross(v1, v2)
-	print(vanishL)
 
 	vanishL[0] = vanishL[0]/vanishL[2]
 	vanishL[1] = vanishL[1]/vanishL[2]
@@ -123,41 +120,59 @@ def MetricRectification(lines):
 	return invH2
 
 def getRectification(img):
-		#cv2.imshow('Original', img)
+#	cv2.imshow('Original', img)
 
 	lines = getLines(img)
 
-#	lines = np.matrix('220. 299. 1.; \
-#					   499. 36. 1.; \
-#					   257. 388. 1.; \
-#					   527. 98. 1.; \
-#					   160. 169. 1.; \
-#					   494. 256. 1.; \
-#					   214. 29. 1.; \
-#					   449. 83. 1.')
+#	lines = np.ones((8, 3))
+#	lines[0][0] = 220.
+#	lines[1][0] = 499.
+#	lines[2][0] = 257.
+#	lines[3][0] = 527.
+#	lines[4][0] = 160.
+#	lines[5][0] = 494.
+#	lines[6][0] = 214.
+#	lines[7][0] = 449.
+#
+#	lines[0][1] = 299.
+#	lines[1][1] = 36. 
+#	lines[2][1] = 388.
+#	lines[3][1] = 98. 
+#	lines[4][1] = 169.
+#	lines[5][1] = 256.
+#	lines[6][1] = 29. 
+#	lines[7][1] = 83. 
 
 	H1 = AffineRectification(lines)
 
-	affine_img_retification = cv2.warpPerspective(img, H1, (img.shape[1], img.shape[0]))
-
+#	affine_img_retification = cv2.warpPerspective(img, H1, (img.shape[1], img.shape[0]))
 #	cv2.imshow('Affine Retification', affine_img_retification)
 
 	lines = getLines(affine_img_retification)
 
-#	lines = np.matrix('216. 91. 1.; \
-#				   339. 123. 1.; \
-#				   424. 78. 1.; \
-#				   249. 169. 1.; \
-#				   307. 50. 1.; \
-#				   340. 123. 1.; \
-#				   215. 93. 1.; \
-#				   425. 78. 1.')
+#	lines = np.ones((8, 3))
+#	lines[0][0] = 216.
+#	lines[1][0] = 339.
+#	lines[2][0] = 424.
+#	lines[3][0] = 249.
+#	lines[4][0] = 307.
+#	lines[5][0] = 340.
+#	lines[6][0] = 215.
+#	lines[7][0] = 425.
+#
+#	lines[0][1] = 91. 
+#	lines[1][1] = 123.
+#	lines[2][1] = 78. 
+#	lines[3][1] = 169.
+#	lines[4][1] = 50. 
+#	lines[5][1] = 123.
+#	lines[6][1] = 93. 
+#	lines[7][1] = 78. 
 
 	H2 = MetricRectification(lines)
 	H3 = H2*H1
 
 #	metric_img_retification = cv2.warpPerspective(affine_img_retification, H3, (img.shape[1], img.shape[0]))
-
 #	cv2.imshow('Metric Retification', metric_img_retification)
 
 	cv2.namedWindow('image')

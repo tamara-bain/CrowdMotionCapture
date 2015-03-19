@@ -113,6 +113,48 @@ def getNewPoints(img, img_old, points):
     # Return the updated points
     return points
 
+def fit_curve(track, deg = 1): 
+    frames = track.getNumberOfFrames()
+    X = np.zeros(frames)
+    Y = np.zeros(frames)
+    for j in range(0,frames):
+        a,b = track.points[j].getCoords()
+        X[j] = a
+        Y[j] = b
+
+    c = np.polyfit(X, Y, deg)
+    return np.poly1d(c)
+
+def remove_tracks_with_slope(track_info, deg = 1, m = 2.):
+    n = len(track_info)
+    slopes = np.zeros(n)
+    for i in range(n):
+        track = track_info[i]
+        frames = track.getNumberOfFrames()
+        X = np.zeros(frames)
+        Y = np.zeros(frames)
+        for j in range(0,frames):
+            a,b = track.points[j].getCoords()
+            X[j] = a
+            Y[j] = b
+
+        c = np.polyfit(X, Y, deg)
+        slopes[i] = c[0]
+
+    return reject_outliers(track_info, slopes, m)
+
+def reject_outliers(result, data, m = 2.):
+    n = len(data)
+    d = np.abs(data - np.median(data))
+    mdev = np.median(d)
+    s = d/mdev if mdev else 0.
+
+    for i in range(n):
+        ind = n - i - 1
+        if s[ind] >= m:
+            result.pop(ind)
+
+    return result
 
 # Calculates the distance between two points
 def getDistance(a, b, c, d):
@@ -260,7 +302,7 @@ if __name__ == '__main__':
         # Handle for keyboard input
         # ESC: Kills program
         # Return: stops capturing frames and moves onto next step
-        k = cv2.waitKey(30) & 0xff
+        k = cv2.waitKey(7) & 0xff
         if k == 27:
             exit()
         if k == 10:
@@ -476,12 +518,17 @@ if __name__ == '__main__':
     for i in range(n):
         track_info[i].calcDirection()
 
-    # Group Tracks
+    # Remove Outlier Tracks
+    track_info = remove_tracks_with_slope(track_info, 1, 1.75)
+    track_info = remove_tracks_with_slope(track_info, 2, 1)
 
+    # Group Tracks
+    fit_curve
+
+    # draw the tracks
     old_frame_warp = cv2.warpPerspective(old_frame, H, (old_frame.shape[1], old_frame.shape[0]))
     mask = np.zeros_like(old_frame_warp)
 
-    # draw the tracks
     for i,track in enumerate(track_info):
         frames = track.getNumberOfFrames()
         for j in range(1,frames):
@@ -508,25 +555,24 @@ if __name__ == '__main__':
             X[i] = a
             Y[i] = b
 
-
-        p3 = np.poly1d(np.polyfit(X, Y, 3))
+        p2 = np.poly1d(np.polyfit(X, Y, 2))
         p1 = np.poly1d(np.polyfit(X, Y, 1))
 
         mask = np.zeros_like(old_frame_warp)
 
         for i in range(mask.shape[1]):
             j1 = p1(i)
-            j3 = p3(i)
+            j2 = p2(i)
 
-            if j1 != j1 or j3 != j3:
+            if j1 != j1 or j2 != j2:
                 continue
 
             if j1 >= 0 or j1 <= mask.shape[0]:
                 j = int(j1)
                 mask = cv2.circle(mask, (i,j), 1, (255, 0, 0), 2)
 
-            if j3 >= 0 or j3 <= mask.shape[0]:
-                j = int(j3)
+            if j2 >= 0 or j2 <= mask.shape[0]:
+                j = int(j2)
                 mask = cv2.circle(mask, (i,j), 1, (0, 255, 0), 2)
             
 
@@ -551,7 +597,7 @@ if __name__ == '__main__':
             if track_i > 0:
                 track_i = track_i - 1
         if k == 83:
-            if track_i < len(track_info):
+            if track_i < len(track_info) - 1:
                 track_i = track_i + 1
 
     cv2.waitKey()
