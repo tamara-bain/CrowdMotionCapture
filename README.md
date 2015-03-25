@@ -41,10 +41,17 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
  
 ### Week 4: March 23-27
 1. Calculate Speed of Pedestrains
-2. Calcualte the flow of a crowd
-3. Calculate the density of a crowd
-4. Get video of the LRT station
-5. Test results of pedestrian training
+2. Calcualte the flow of a crowd **(DONE)**
+3. Calculate the density of a crowd **(DONE)**
+4. Get video of the LRT station **(DONE)**
+5. Test results of pedestrian training **(DONE)**
 6. Group Tracks, from Lucas-Kanade together, that in the same location and move in the same direction (optional)
 7. Get Head Data for Object Dectection (optional)  
 8. Train Head Dectection Data (optional)
+
+### Week 5: March 30 - April 3
+1. Set up Unity
+2. Read file in Unity
+3. Export Tracks to Text File
+4. Render Pedestrians
+5. Translate Pedestrians According to Track
