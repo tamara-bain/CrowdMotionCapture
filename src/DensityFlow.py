@@ -2,6 +2,7 @@
 
 import numpy as np
 import cv2
+import sys
 
 ran = 0
 dx,dy,tfx,tfy = 0,0,0,0
@@ -58,8 +59,16 @@ def draw_flow(img, flow, step=16):
 
 
 if __name__ == '__main__':
-    #cap = cv2.VideoCapture(0)
-    cap = cv2.VideoCapture('../Videos/Test/Walk1.mpg')
+
+    # Get video file if given
+    # Else open default camera
+    if len(sys.argv) < 2:
+        cap = cv2.VideoCapture(-1)
+    else:
+        videoPath = sys.argv[1]
+        cap = cv2.VideoCapture(videoPath)
+
+    #cap = cv2.VideoCapture('../../TestHUB2-small.mp4')
     
     # Grab first frame
     ret, prev = cap.read()
