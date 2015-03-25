@@ -5,6 +5,7 @@ import cv2
 
 ran = 0
 dx,dy,tfx,tfy = 0,0,0,0
+duration = 0.98
 
 def draw_flow(img, flow, step=16):
     h, w = img.shape[:2]
@@ -24,16 +25,16 @@ def draw_flow(img, flow, step=16):
         tfx = fx
         tfy = fy
     else:
-        dx = (abs(dx) + abs(fx))*0.95
-        dy = (abs(dy) + abs(fy))*0.95
-        tfx = (tfx + fx)*0.95
-        tfy = (tfy + fy)*0.95
+        dx = (abs(dx) + abs(fx))*duration
+        dy = (abs(dy) + abs(fy))*duration
+        tfx = (tfx + fx)*duration
+        tfy = (tfy + fy)*duration
         
     lines = np.vstack([x, y, x+tfx, y+tfy]).T.reshape(-1, 2, 2)
     lines = np.int32(lines + 0.5)
     lines = list(zip(lines, list(range(0,3600))))
     vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-    print(len(lines))
+
     for line, i in lines:
         x, y = line[0]
         
@@ -41,7 +42,11 @@ def draw_flow(img, flow, step=16):
         
         # change color based on density
         color = (0, 0, 255)
-        if density < 15:
+        
+        if density < 30:
+            continue
+            
+        if density < 40:
             color = (0, 255, 0)
         elif density < 60:
             color = (0, 255, 255)
