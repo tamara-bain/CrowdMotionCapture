@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import numpy as np
 import cv2
 import sys
@@ -7,56 +6,70 @@ import sys
 ran = 0
 dx,dy,tfx,tfy = 0,0,0,0
 duration = 0.98
+threshold = 20
 
-def draw_flow(img, flow, step=16):
+block_size = 16
+
+density = None
+
+def draw_flow(img, prev, step=16):
+    global density
     h, w = img.shape[:2]
     y, x = np.mgrid[step/2:h:step, step/2:w:step].reshape(2,-1)
     x = np.int32(x)
     y = np.int32(y)
-
-    fx, fy = flow[y,x].T
-        
-    fx = -fx
-    fy = -fy
-    global ran , dx , dy, tfx, tfy
-    if ran == 0:
-        ran = 1
-        dx = abs(fx)
-        dy = abs(fy)
-        tfx = fx
-        tfy = fy
-    else:
-        dx = (abs(dx) + abs(fx))*duration
-        dy = (abs(dy) + abs(fy))*duration
-        tfx = (tfx + fx)*duration
-        tfy = (tfy + fy)*duration
-        
-    lines = np.vstack([x, y, x+tfx, y+tfy]).T.reshape(-1, 2, 2)
-    lines = np.int32(lines + 0.5)
-    lines = list(zip(lines, list(range(0,3600))))
-    vis = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
-
-    for line, i in lines:
-        x, y = line[0]
-        
-        density = dx[i] + dy[i]
-        
-        # change color based on density
-        color = (0, 0, 255)
-        
-        if density < 30:
-            continue
+    
+    
+    td = np.int16(img) - np.int16(prev)
+    
+    sx = int(w/block_size)
+    sy = int(h/block_size)
+    
+    if density == None:
+        density = np.zeros((sy, sx))
+    
+    mask = np.zeros((h, w, 3))
+    
+    for i in range(sx):
+        for j in range(sy):
+            if i*block_size+block_size > w:
+                continue
             
-        if density < 40:
-            color = (0, 255, 0)
-        elif density < 60:
-            color = (0, 255, 255)
+            if j*block_size+block_size > h:
+                continue
             
-        cv2.polylines(vis, [line], 0, color)
-        cv2.circle(vis, tuple(line[0]), 1, color, -1)
-         
-    return vis
-
+            b = td[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size]
+            thresh = abs(b) > threshold
+            
+            d = 0
+            for ki in range(thresh.shape[1]):
+                for kj in range(thresh.shape[0]):
+                    if thresh[ki][kj]:
+                        d += 1
+                    
+            density[j][i] += d/(block_size*block_size)
+            
+            mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 0] = 0
+            mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 1] = 0
+            mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 2] = 255
+  
+            if density[j][i] < 0.02:
+                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 0] = 0
+                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 1] = 255
+                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 2] = 0
+            elif density[j][i] < 0.5:
+                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 0] = 0
+                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 1] = 255
+                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 2] = 255
+        
+            density[j][i] -= 0.1
+            
+            if (density[j][i] > 1):
+                density[j][i] = 1
+                
+            if (density[j][i] < 0):
+                density[j][i] = 0
+    return np.uint8(mask)
 
 if __name__ == '__main__':
 
@@ -82,10 +95,11 @@ if __name__ == '__main__':
 
         # Convert to grey scale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        flow = cv2.calcOpticalFlowFarneback(prevgray, gray, None, 0.5, 3, 20, 3, 5, 1.2, 0)
+        #flow = cv2.calcOpticalFlowFarneback(prevgray, gray, None, 0.5, 3, 20, 3, 5, 1.2, 0)
+        d_img = draw_flow(gray, prevgray)
+        cv2.imshow('de', cv2.add(np.uint8(0.6*img), np.uint8(0.4*d_img)))
         prevgray = gray
 
-        cv2.imshow('flow', draw_flow(gray, flow))
 
         ch = 0xFF & cv2.waitKey(5)
         if ch == 27:
