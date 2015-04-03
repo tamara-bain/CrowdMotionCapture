@@ -50,8 +50,9 @@ http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDatas
 8. Train Head Dectection Data (optional)
 
 ### Week 5: March 30 - April 3
-1. Set up Unity
-2. Read file in Unity
+1. Set up Unity **(DONE)**
+2. Read file in Unity **(DONE)**
 3. Export Tracks to Text File
-4. Render Pedestrians
-5. Translate Pedestrians According to Track
+4. Render Pedestrians (as cylinders) **(DONE)**
+5. Render Pedestrians (as people)
+6. Translate Pedestrians According to Track **(DONE)**
