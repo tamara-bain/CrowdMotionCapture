@@ -5,27 +5,56 @@ import sys
 
 help = 'Usage: python3 Rectification.py <image file>'
 
+
+dragging = False
+m_x = m_y = 0
 points = []
 def on_mouse(event,x,y,flags,param):
-	if event == cv2.EVENT_LBUTTONDBLCLK:
-		print('Mouse Position: ', x, ', ', y)
+	global dragging, m_x, m_y
+	if event == cv2.EVENT_LBUTTONDOWN:
+		dragging = True
+		points.append([x, y])
+		m_x = x
+		m_y = y
+	elif event == cv2.EVENT_MOUSEMOVE:
+		if dragging:
+			m_x = x
+			m_y = y
+	elif event == cv2.EVENT_LBUTTONUP:
+		dragging = False
 		points.append([x, y])
 
 def nothing(x):
     pass
 
 def getLines(img):
+	global m_x, m_y
 	del points[:]
 
 	cv2.namedWindow('Get Lines')
 	cv2.setMouseCallback('Get Lines', on_mouse)
 
 	while(1):
-		cv2.imshow('Get Lines', img)
+		tmp = img.copy()
+
+		for i in range(np.int(np.floor(len(points)/2))):
+			a = points[2*i][0]
+			b = points[2*i][1]
+			c = points[2*i+1][0]
+			d = points[2*i+1][1]
+			cv2.line(tmp, (a,b), (c,d), (255, 0, 0), 2)
+
+		if len(points) % 2 == 1:
+			a = points[-1][0]
+			b = points[-1][1]
+			cv2.line(tmp, (a,b), (m_x,m_y), (255, 0, 0), 2)
+
+		cv2.imshow('Get Lines', tmp)
+
 		k = cv2.waitKey(30) & 0xff
 		if k == 27:
 			exit()
-		if k == 10:
+		if k == 10 or k == 13:
 			break
 
 	lines = np.ones((len(points), 3))
@@ -145,7 +174,7 @@ def getRectification(img):
 
 	H1 = AffineRectification(lines)
 
-#	affine_img_retification = cv2.warpPerspective(img, H1, (img.shape[1], img.shape[0]))
+	affine_img_retification = cv2.warpPerspective(img, H1, (img.shape[1], img.shape[0]))
 #	cv2.imshow('Affine Retification', affine_img_retification)
 
 	lines = getLines(affine_img_retification)
@@ -222,7 +251,7 @@ def getRectification(img):
 		k = cv2.waitKey(30) & 0xFF
 		if k == 27:
 			exit()
-		if k == 10:
+		if k == 10 or k == 13:
 			break
 
 	cv2.destroyWindow('image')
