@@ -523,7 +523,7 @@ if __name__ == '__main__':
     track_info = remove_tracks_with_slope(track_info, 2, 1)
 
     # Group Tracks
-    fit_curve
+    
 
     # draw the tracks
     old_frame_warp = cv2.warpPerspective(old_frame, H, (old_frame.shape[1], old_frame.shape[0]))
@@ -536,7 +536,8 @@ if __name__ == '__main__':
             c,d = track.points[j].getCoords()
 
             cv = i % maxCorners
-            mask = cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
+            cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
+
 
     img = cv2.add(np.uint8(0.5*old_frame_warp), mask)
 
@@ -569,11 +570,11 @@ if __name__ == '__main__':
 
             if j1 >= 0 or j1 <= mask.shape[0]:
                 j = int(j1)
-                mask = cv2.circle(mask, (i,j), 1, (255, 0, 0), 2)
+                cv2.circle(mask, (i,j), 1, (255, 0, 0), 2)
 
             if j2 >= 0 or j2 <= mask.shape[0]:
                 j = int(j2)
-                mask = cv2.circle(mask, (i,j), 1, (0, 255, 0), 2)
+                cv2.circle(mask, (i,j), 1, (0, 255, 0), 2)
             
 
         for i in range(1,frames):
@@ -581,7 +582,7 @@ if __name__ == '__main__':
             c,d = track.points[i].getCoords()
 
             cv = track_i % maxCorners
-            mask = cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
+            cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
 
 
         img = cv2.add(np.uint8(0.5*old_frame_warp), mask)
@@ -591,12 +592,12 @@ if __name__ == '__main__':
         k = cv2.waitKey(30) & 0xff
         if k == 27:
             exit()
-        if k == 10:
+        if k == ord(' '):
             break
-        if k == 81:
+        if k == ord('a'):
             if track_i > 0:
                 track_i = track_i - 1
-        if k == 83:
+        if k == ord('d'):
             if track_i < len(track_info) - 1:
                 track_i = track_i + 1
 
@@ -633,7 +634,7 @@ if __name__ == '__main__':
                     c,d = track.points[index].getCoords()
 
                     cv = i % maxCorners
-                    mask = cv2.line(mask, (a,b), (c,d), color[cv].tolist(), 2)
+                    cv2.line(mask, (a,b), (c,d), color[cv].tolist(), 2)
 
         grid_size = 5
         vector_size = 20
@@ -666,7 +667,7 @@ if __name__ == '__main__':
                 b = int(b)
                 c = int(c)
                 d = int(d)
-                mask2 = cv2.line(mask2, (a,b), (c,d), color[cv].tolist(), 2)
+                cv2.line(mask2, (a,b), (c,d), color[cv].tolist(), 2)
 
         img = cv2.add(np.uint8(0.5*frame), mask)
 
@@ -676,12 +677,12 @@ if __name__ == '__main__':
         k = cv2.waitKey(30) & 0xff
         if k == 27:
             exit()
-        if k == 10:
+        if k == ord(' '):
             break
-        if k == 81:
+        if k == ord('a'):
             if grid > 0:
                 grid = grid - 1
-        if k == 83:
+        if k == ord('d'):
             if grid*grid_size*grid_size < len(track_info):
                 grid = grid + 1
 
