@@ -149,6 +149,14 @@ def MetricRectification(lines):
 	return invH2
 
 def getRectification(img):
+	# Get rectification matrix
+	print('Instructions:')
+	print('1: You need to pick two pairs of parallel lines.')
+	print('   Each line requires two points. To get a point')
+	print('   point you have to double click. Once the 4')
+	print('   lines are selected press the return key.')
+	print('2: Repeat the process but with two pairs of')
+	print('   orthoganal lines.')
 #	cv2.imshow('Original', img)
 
 	lines = getLines(img)

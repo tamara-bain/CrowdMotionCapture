@@ -3,6 +3,7 @@ from scipy.interpolate import UnivariateSpline
 import cv2
 import math
 import sys
+import os
 from Point import Point
 from TrackInfo import TrackInfo
 from Rectification import getRectification
@@ -170,6 +171,8 @@ def getDistance(a, b, c, d):
 if __name__ == '__main__':
     print(help)
 
+    out_path = '../Output/output.out'
+
     # Get video file if given
     # Else open default camera
     if len(sys.argv) < 2:
@@ -177,6 +180,8 @@ if __name__ == '__main__':
     else:
         videoPath = sys.argv[1]
         cap = cv2.VideoCapture(videoPath)
+        out_name = os.path.split(videoPath)[1]
+        out_path = '../Output/' + os.path.splitext(out_name)[0] + '.out'
 
     # params for ShiTomasi corner detection
     feature_params = dict(maxCorners = maxCorners,
@@ -197,15 +202,6 @@ if __name__ == '__main__':
     # Take first frame
     ret, old_frame = cap.read()
     old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
-
-    # Get rectification matrix
-    print('Instructions:')
-    print('1: You need to pick two pairs of parallel lines.')
-    print('   Each line requires two points. To get a point')
-    print('   point you have to double click. Once the 4')
-    print('   lines are selected press the return key.')
-    print('2: Repeat the process but with two pairs of')
-    print('   orthoganal lines.')
 
     # H = getRectification(old_frame)
     H = np.eye(3)
@@ -687,6 +683,21 @@ if __name__ == '__main__':
                 grid = grid + 1
 
         frame_count = frame_count + 1
+
+    f = open(out_path, 'w')
+
+    for i,track in enumerate(track_info):
+        frames = track.getNumberOfFrames()
+        start = track.startFrame
+        f.write(str(start) + ' ' + str(frames) + '\n')
+
+    f.write('\n')
+
+    for i,track in enumerate(track_info):
+        frames = track.getNumberOfFrames()
+        for j in range(0,frames):
+            a,b = track.points[j].getCoords()
+            f.write(str(int(a)) + ' ' + str(int(b)) + '\n')
 
     cv2.destroyAllWindows()
     cap.release()

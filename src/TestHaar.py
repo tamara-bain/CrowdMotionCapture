@@ -26,7 +26,7 @@ if __name__ == '__main__':
         if not ret:
             break
 
-        people = cascade.detectMultiScale(frame, 1.5, 15)
+        people = cascade.detectMultiScale(frame, 1.2, 5)
 
         for i in range(len(people)):
             (x,y,w,h) = people[i]
