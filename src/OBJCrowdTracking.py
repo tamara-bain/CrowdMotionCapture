@@ -19,7 +19,7 @@ density_threshold = 0.1
 density_growth = 0.5
 density_decay = 0.25
 
-draw_density = True
+draw_density = False
 
 save_video = False
 
@@ -296,7 +296,6 @@ if __name__ == '__main__':
 	# Allocate memory for density array
 	density = np.zeros((dh, dw))
 
-	prevdetected = None
 	tracks = []
 
 	frame_num = 0
@@ -311,31 +310,29 @@ if __name__ == '__main__':
 		# Convert to grey scale
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-		#if prevdetected != None:
-		#	updateTrack(prevdetected, prevgray, gray)
-		#	drawDetected(frame, prevdetected, (255, 0, 0))
-
 		# Calculate Density
 		density = getDensity(gray, prevgray, density, block_size)
 
+		# Draw Density
 		if draw_density:
 			mask = drawDensity(frame, density, block_size)
 			frame = cv2.add(np.uint8(0.6*frame), np.uint8(0.4*mask))
 
+		# Find objects in the scene (Example: Full Body)
 		detected = full_body_cascade.detectMultiScale(frame, 1.2, 5)
 		#np.append(detected, upper_body_cascade.detectMultiScale(frame, 1.2, 5))
 
+		# Find detected areas that are not moving and remove them
 		sp = removeDetected(detected, density, block_size)
 		detected = detected[sp==1]
 
+		# Connect new detected objects with previously tracked
 		tracks = updateTracks(tracks, detected, prevgray, gray, frame_num)
 
-		print(len(tracks))
+		# Draw bounding box around detected
+		#drawDetected(frame, detected, (0, 255, 0))
 
-		prevdetected = detected
-
-		drawDetected(frame, detected, (0, 255, 0))
-
+		# Remove short tracks
 		if len(tracks) > 1:
 			sp = cleanTracks(tracks)
 
@@ -346,6 +343,7 @@ if __name__ == '__main__':
 				if sp[index] == 0:
 					del tracks[index]
 		
+		# Draw Tracks
 		frame = drawTracks(frame, tracks, frame_num)
 
 		cv2.imshow('Frame', frame)
