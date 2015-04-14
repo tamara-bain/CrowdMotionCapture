@@ -9,7 +9,7 @@ from TrackInfo import TrackInfo
 from Rectification import getRectification
 
 
-help = 'Usage: python3 CrowdTracking.py <video file>'
+help = 'Usage: python CrowdTracking.py <video file>'
 
 # Parameters
 maxCorners = 300

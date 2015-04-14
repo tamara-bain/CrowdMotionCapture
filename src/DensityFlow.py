@@ -3,11 +3,7 @@ import numpy as np
 import cv2
 import sys
 
-ran = 0
-dx,dy,tfx,tfy = 0,0,0,0
-duration = 0.98
 threshold = 20
-
 block_size = 16
 
 density = None
