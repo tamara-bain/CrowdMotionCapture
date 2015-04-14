@@ -19,7 +19,7 @@ density_decay = 0.25
 
 draw_density = True
 
-save_video = True
+save_video = False
 
 
 # Draw rectangles over areas detected by a cascade
