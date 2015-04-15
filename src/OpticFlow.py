@@ -28,9 +28,6 @@ def draw_flow(img, flow, step=16):
 
 if __name__ == '__main__':
     cap = cv2.VideoCapture(0)
-    #cap = cv2.VideoCapture('passageway1-c3.avi')
-    #cap = cv2.VideoCapture('Walk1.mpg')
-    #cap = cv2.VideoCapture('Meet_WalkTogether1.mpg')
 
     # Grab first frame
     ret, prev = cap.read()

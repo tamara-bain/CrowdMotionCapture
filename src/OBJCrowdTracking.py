@@ -1,3 +1,17 @@
+##############################################################################
+# OBJCrowdTracking.py
+# Code Written By: Michael Feist
+#
+# Description:
+# This code handles crowd tracking using Haar Cascades and object detection.
+#
+# To run:
+# python OBJCrowdTracking.py [OPTIONS]
+#
+# For Help:
+# python OBJCrowdTracking.py --help
+##############################################################################
+
 import argparse
 import sys
 import os
@@ -23,6 +37,7 @@ draw_density = False
 
 save_video = False
 
+# Matrix for Homography
 H = np.eye(3)
 
 parser = argparse.ArgumentParser(
@@ -394,8 +409,6 @@ def drawTracks(frame, tracks, frame_count):
 	return mask
 
 if __name__ == '__main__':
-	parser.print_help()
-
 	# Parse Arguments
 	args = parser.parse_args(sys.argv[1:])
 

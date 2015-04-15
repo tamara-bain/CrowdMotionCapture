@@ -1,3 +1,14 @@
+##############################################################################
+# TestHaar.py
+# Code Written By: Michael Feist
+#
+# This is a very simple test scipt to to test our trained cascade.
+#
+# To run:
+# python TestHaar.py <video file>
+##############################################################################
+
+
 import numpy as np
 import cv2
 import sys

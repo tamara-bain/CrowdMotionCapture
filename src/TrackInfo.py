@@ -1,3 +1,11 @@
+##############################################################################
+# TrackInfo.py
+# Code Written By: Michael Feist
+#
+# This is a helper class created to store info about tracks used in
+# CrowdTracking.py
+##############################################################################
+
 from Point import Point
 import math
 

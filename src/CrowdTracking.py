@@ -1,3 +1,14 @@
+##############################################################################
+# CrowdTracking.py
+# Code Written By: Michael Feist
+#
+# Description:
+# This code handles crowd tracking using Lucas-Kanade.
+#
+# To run:
+# python CrowdTracking.py <video file>
+##############################################################################
+
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 import cv2

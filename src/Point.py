@@ -1,3 +1,10 @@
+##############################################################################
+# Point.py
+# Code Written By: Michael Feist
+#
+# This is a helper class created to store a point with x and y coordinates.
+##############################################################################
+
 import numpy as np
 import math
 

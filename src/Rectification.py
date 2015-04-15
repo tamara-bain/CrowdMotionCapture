@@ -1,3 +1,30 @@
+##############################################################################
+# Rectification.py
+# Code Written By: Michael Feist
+#
+# Algorithm found in Section 2.7 of:
+# R. Hartley and A. Zisserman, ‘Multiple View Geometry’, 
+# Cambridge University Publishers, 2nd ed. 2004
+#
+# Algorithm first takes two pairs of parallel lines calculates the Affine
+# rectification. This takes the perspective image to an affine image.
+#
+# Next the algorithm takes two pairs of orthogonal lines calculates Metric
+# rectification. This takes the affine image to a metric image.
+#
+# The user is then given a display of the final rectified image where they can
+# scale, rotate, and translate the results.
+#
+# Finally, the resulting matrix is printed to the screen where the user can
+# copy it for uses in other programs.
+#
+# To run:
+# python Rectification.py [OPTIONS]
+#
+# For Help:
+# python Rectification.py --help
+##############################################################################
+
 import argparse
 import sys
 
@@ -44,12 +71,14 @@ def getLines(img):
 	global m_x, m_y
 	del points[:]
 
+	# Create window and set mouse call back
 	cv2.namedWindow('Get Lines')
 	cv2.setMouseCallback('Get Lines', on_mouse)
 
 	while(1):
 		tmp = img.copy()
 
+		# Draw lines
 		for i in range(np.int(np.floor(len(points)/2))):
 			a = points[2*i][0]
 			b = points[2*i][1]
@@ -64,12 +93,14 @@ def getLines(img):
 
 		cv2.imshow('Get Lines', tmp)
 
+		# Handle keyboard input
 		k = cv2.waitKey(30) & 0xff
 		if k == 27:
 			exit()
 		if k == 10 or k == 13:
 			break
 
+	# Copy points to lines list
 	lines = np.ones((len(points), 3))
 
 	for i in range(len(points)):
@@ -77,6 +108,7 @@ def getLines(img):
 		lines[i][0] = p[0]
 		lines[i][1] = p[1]
 
+	# Close window
 	cv2.destroyWindow('Get Lines')
 
 	return lines

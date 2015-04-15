@@ -1,14 +1,42 @@
 #!/usr/bin/env python
+
+##############################################################################
+# DensityFlow.py
+# Code Written By: Michael Feist, Maciej Ogrocki, and Tamara Bain
+#
+# Displays a density map over the video.
+#
+# To run:
+# python DensityFlow.py [OPTIONS]
+#
+# For Help:
+# python DensityFlow.py --help
+##############################################################################
+
+import argparse
+import sys
+
 import numpy as np
 import cv2
-import sys
 
 threshold = 20
 block_size = 16
 
 density = None
 
-def draw_flow(img, prev, step=16):
+parser = argparse.ArgumentParser(
+        prog='Rectification', 
+        usage='python %(prog)s.py [options]')
+parser.add_argument(
+    '--video', 
+    type=str, 
+    help='path to input video')
+parser.add_argument(
+    '--blockSize', 
+    type=int, 
+    help='size of blocks used for density.')
+
+def drawDensity(img, prev, step=16):
     global density
     h, w = img.shape[:2]
     y, x = np.mgrid[step/2:h:step, step/2:w:step].reshape(2,-1)
@@ -43,7 +71,7 @@ def draw_flow(img, prev, step=16):
                     if thresh[ki][kj]:
                         d += 1
                     
-            density[j][i] += d/(block_size*block_size)
+            density[j][i] += 0.5*d/(block_size*block_size)
             
             mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 0] = 0
             mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 1] = 0
@@ -58,7 +86,7 @@ def draw_flow(img, prev, step=16):
                 mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 1] = 255
                 mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 2] = 255
         
-            density[j][i] -= 0.1
+            density[j][i] -= 0.05
             
             if (density[j][i] > 1):
                 density[j][i] = 1
@@ -68,14 +96,18 @@ def draw_flow(img, prev, step=16):
     return np.uint8(mask)
 
 if __name__ == '__main__':
+    # Parse Arguments
+    args = parser.parse_args(sys.argv[1:])
 
     # Get video file if given
     # Else open default camera
-    if len(sys.argv) < 2:
-        cap = cv2.VideoCapture(-1)
+    if args.video != None:
+        cap = cv2.VideoCapture(args.video)
     else:
-        videoPath = sys.argv[1]
-        cap = cv2.VideoCapture(videoPath)
+        cap = cv2.VideoCapture(-1)
+
+    if args.blockSize != None:
+        block_size = args.blockSize
 
     #cap = cv2.VideoCapture('../../TestHUB2-small.mp4')
     
@@ -91,12 +123,13 @@ if __name__ == '__main__':
 
         # Convert to grey scale
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        #flow = cv2.calcOpticalFlowFarneback(prevgray, gray, None, 0.5, 3, 20, 3, 5, 1.2, 0)
-        d_img = draw_flow(gray, prevgray)
+
+        # Draw density
+        d_img = drawDensity(gray, prevgray)
         cv2.imshow('de', cv2.add(np.uint8(0.6*img), np.uint8(0.4*d_img)))
         prevgray = gray
 
-
+        # Handle keyboard input
         ch = 0xFF & cv2.waitKey(5)
         if ch == 27:
             break

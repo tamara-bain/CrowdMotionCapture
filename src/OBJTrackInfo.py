@@ -1,3 +1,11 @@
+##############################################################################
+# OBJTrackInfo.py
+# Code Written By: Michael Feist
+#
+# This is a helper class created to store info about tracks used in
+# OBJCrowdTracking.py
+##############################################################################
+
 from Point import Point
 import math
 
