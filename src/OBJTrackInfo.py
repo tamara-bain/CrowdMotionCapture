@@ -17,11 +17,13 @@ class OBJTrackInfo:
 		self.ended = False
 		self.startFrame = 0
 		self.endFrame = 0
-		self.direction = []
+
+		# Path
 		self.points = []
 
 		self.lastFound = 0
 
+		# Center of bounding box
 		self.x = 0
 		self.y = 0
 
@@ -72,18 +74,12 @@ class OBJTrackInfo:
 		new_points = self.points[i:n]
 		del self.points[i:n]
 
-		n = len(self.direction)
-		new_directions = self.direction[i:n]
-		del self.direction[i:n]
-
 		track = TrackInfo()
 		track.start(frame)
 		track.end(self.endFrame)
 		track.points = self.points
-		track.direction = self.direction
 
 		self.points = new_points
-		self.direction = new_directions
 
 		self.endFrame = frame
 

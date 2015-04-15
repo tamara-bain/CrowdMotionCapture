@@ -1,21 +1,21 @@
+import argparse
+import sys
+import os
+
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 import cv2
 import math
-import sys
-import os
+
 from Point import Point
 from OBJTrackInfo import OBJTrackInfo
-from Rectification import getRectification
-
-help = 'Usage: python OBJCrowdTracking.py <video file>'
 
 num_colors = 100
 
 threshold = 50
 block_size = 16
 
-density_threshold = 0.1
+density_threshold = 0.15
 density_growth = 0.5
 density_decay = 0.25
 
@@ -23,6 +23,39 @@ draw_density = False
 
 save_video = False
 
+H = np.eye(3)
+
+parser = argparse.ArgumentParser(
+		prog='OBJCrowdTracking', 
+		usage='python %(prog)s.py [options]')
+parser.add_argument(
+	'--video', 
+	type=str, 
+	help='path to input video.')
+parser.add_argument(
+	'--blockSize', 
+	type=int, 
+	help='size of blocks used for density.')
+parser.add_argument(
+	'--dThresh', 
+	type=float, 
+	help='threshold of needed density for accepting objects.')
+parser.add_argument(
+	'--dDraw', 
+	type=bool, 
+	help='if true the density will be drawn over the image.')
+parser.add_argument(
+	'--saveFrames', 
+	type=str, 
+	help='path to save images.')
+parser.add_argument(
+	'--homography', 
+	type=str, 
+	help='numpy 3x3 homography matrix.')
+parser.add_argument(
+	'--homographyPath', 
+	type=str, 
+	help='reads numpy 3x3 homography matrix from file.')
 
 # Draw rectangles over areas detected by a cascade
 def drawDetected(frame, detected, color):
@@ -30,6 +63,7 @@ def drawDetected(frame, detected, color):
 		(x,y,w,h) = detected[i]
 		cv2.rectangle(frame, (x, y), (x+w, y+h), color, 3)
 
+# Create density mask
 def drawDensity(img, density, step=16):
 	# Get width and height
 	h, w = img.shape[:2]
@@ -64,6 +98,8 @@ def drawDensity(img, density, step=16):
 
 	return mask
 
+# Calculate the density
+# The density is based off how much the crowd is moving
 def getDensity(img, prev, density, step=16):
 	# Get width and height
 	h, w = img.shape[:2]
@@ -108,46 +144,70 @@ def getDensity(img, prev, density, step=16):
 
 	return density
 
+# Using the density remove detected objects that are not moving
+# as these most likely don't belong to people in the crowd
 def removeDetected(detected, density, frame, step=16):
+	# If not people then detected then there is nothing to
+	# remove
 	if len(detected) == 0:
 		return detected
 
+	# Get size of density array
 	dh, dw = density.shape[:2]
-	ch = cw = 0
+
+	# Create binary array indicating what elements in detected should be
+	# removed. '1' means we should keep the detected object and '0' means
+	# we should remove the object
 	sp = np.ones(len(detected))
+
+	# Loop over detected
 	for k in range(len(detected)):
+		# Get bounding box of detected
 		(x,y,w,h) = detected[k]
+
+		# Map the bounding box to the density array
 		_x = int(np.ceil(x/step))
 		_y = int(np.ceil(y/step))
 		_w = int(np.floor(w/step))
 		_h = int(np.floor(h/step))
 
+		# Shrink the width if out of bounds
 		while _x+_w >= dw:
 			_w -= 1
 
+		# Shrink the height if out of bounds
 		while _y+_h >= dh:
 			_h -= 1
 
-		d = np.count_nonzero(density[_y:_y+_h, _x:_x+_w])
+		# Calculate the average density
+		d = np.mean(np.mean(density[_y:_y+_h, _x:_x+_w]))
 
-		d = float(d)/((_w+1)*(_h+1))
-
+		# If density less than some threshold then we remove the detected
+		# object
 		if d < density_threshold:
 			sp[k] = 0
 
 	return sp
 
-def cleanTracks(tracks):
-	sp = np.ones(len(tracks), dtype='int')
 
+def cleanTracks(tracks):
+	# Create binary array indicating what tracks should be removed. '1' means 
+	# we should keep the track and '0' means we should remove the track
+	sp = np.ones(len(tracks))
+
+	# Iterate over tracks
 	for i,track in enumerate(tracks):
+		# If not active and has less than certain # of frames then we 
+		# should remove the track
 		if not track.active():
 			frames = len(track.points)
-			if frames < 10:
+			if frames < 100:
 				sp[i] = 0
 
 	return sp
 
+# Old Unsused Code
+# Tried to get the new location of bounding box using optic flow
 def trackWithFlow(prevgray, gray, x, y, w, h):
 	cx = cy = 0.0
 	for i in range(5):
@@ -156,7 +216,8 @@ def trackWithFlow(prevgray, gray, x, y, w, h):
 
 		sub_prevgray = prevgray[y:y+h, x:x+w]
 		sub_gray = gray[y:y+h, x:x+w]
-		flow = cv2.calcOpticalFlowFarneback(sub_prevgray, sub_gray, 0.5, 1, 3, 15, 3, 5, 1)
+		flow = cv2.calcOpticalFlowFarneback(
+			sub_prevgray, sub_gray, 0.5, 1, 3, 15, 3, 5, 1)
 
 		cx += np.mean(flow[:,:,0])
 		cy += np.mean(flow[:,:,1])
@@ -166,15 +227,16 @@ def trackWithFlow(prevgray, gray, x, y, w, h):
 def updateTracks(tracks, detected, prevgray, gray, frame):
 	for i,track in enumerate(tracks):
 		if track.active():
-			#(cx, cy) = trackWithFlow(prevgray, gray, track.bx, track.by, track.bw, track.bh)
-
-			#track.x += cx
-			#track.y += cy
-
 			track.lastFound += 1
 
-			if track.lastFound > 5:
+			if track.lastFound > 100:
 				track.end(frame)
+
+	found_tracks = np.zeros(len(detected), dtype=int)
+	found_tracks_distance = np.zeros(len(detected))
+	for k in range(len(found_tracks)):
+		found_tracks[k] = -1
+		found_tracks_distance[k] = float('inf')
 
 	for k in range(len(detected)):
 		(x,y,w,h) = detected[k]
@@ -182,9 +244,9 @@ def updateTracks(tracks, detected, prevgray, gray, frame):
 		mxd = x+(w/2.)
 		myd = y+(h/2.)
 
-		found = -1
-		min_distance = float('inf')
 		for i,track in enumerate(tracks):
+			thres_dis = 20+track.lastFound/2.
+
 			if not track.active():
 				continue
 
@@ -196,6 +258,7 @@ def updateTracks(tracks, detected, prevgray, gray, frame):
 
 			if hDiff < 0.8 or hDiff > 1.2:
 				continue
+
 			diffx = mxd - track.x
 			diffy = myd - track.y
 
@@ -213,16 +276,28 @@ def updateTracks(tracks, detected, prevgray, gray, frame):
 #			print((x,y,w,h))
 #			print((track.bx,track.by,track.bw,track.bh))
 
-			if distance < min_distance and distance < 20:
-				min_distance = distance
-				found = i
+			if distance < found_tracks_distance[k] and distance < thres_dis:
+				# Check if a deteceted object already clamed block
+				# if so break tie
+				update = True
+				for j in range(k):
+					if found_tracks[j] == i:
+						if found_tracks_distance[j] < distance:
+							update = False
+						else:
+							found_tracks[j] = -1
+							found_tracks_distance[j] = float('inf')
+				if update:
+					found_tracks_distance[k] = distance
+					found_tracks[k] = i
 
-		if found >= 0:
-			tracks[found].x = mxd
-			tracks[found].y = myd
-			tracks[found].addPoint(mxd, myd)
-			tracks[found].setBoundingBox(x, y, w, h)
-			tracks[found].lastFound = 0
+
+		if found_tracks[k] >= 0:
+			tracks[found_tracks[k]].x = mxd
+			tracks[found_tracks[k]].y = myd
+			tracks[found_tracks[k]].addPoint(mxd, myd)
+			tracks[found_tracks[k]].setBoundingBox(x, y, w, h)
+			tracks[found_tracks[k]].lastFound = 0
 		else:
 			track = OBJTrackInfo()
 			track.x = mxd
@@ -240,45 +315,88 @@ def drawTracks(frame, tracks, frame_count):
 	
 	# draw the tracks
 	for i,track in enumerate(tracks):
+		# Get color index
 		cv = i % num_colors
 
+		# If track is still active then draw a bounding box and
+		# a circle indicating the center
 		if track.active():
-			cv2.rectangle(mask, (int(track.bx), int(track.by)), (int(track.bx+track.bw), int(track.by+track.bh)), color[cv].tolist(), 3)
-			cv2.circle(mask, (int(track.x), int(track.y)), 5, color[cv].tolist(), 3)
+			cv2.rectangle(
+				mask, 
+				(int(track.bx), int(track.by)), 
+				(int(track.bx+track.bw), int(track.by+track.bh)), 
+				color[cv].tolist(), 
+				3)
+			cv2.circle(
+				mask, 
+				(int(track.x), int(track.y)), 
+				5, 
+				color[cv].tolist(), 
+				3)
 
+		# If frames captured less than 2 then don't bother drawing track
 		frames = len(track.points)
-		if frames <= 2:
+		if frames < 2:
 			continue
 
+		# Draw the track as a bunch of lines connecting the captured locations`
 		for j in range(1,frames):
 			a,b = track.points[j-1].getCoords()
 			c,d = track.points[j].getCoords()
 
-			cv2.line(mask, (int(a),int(b)), (int(c),int(d)), color[cv].tolist(), 2)
+			cv2.line(
+				mask, 
+				(int(a),int(b)), 
+				(int(c),int(d)), 
+				color[cv].tolist(), 
+				2)
 
-	return cv2.add(np.uint8(0.5*frame), np.uint8(0.5*mask))
+	return mask
 
 if __name__ == '__main__':
-	print(help)
+	parser.print_help()
 
-	out_path = '../Output/output.out'
+	# Parse Arguments
+	args = parser.parse_args(sys.argv[1:])
 
 	# Get video file if given
 	# Else open default camera
-	if len(sys.argv) < 2:
-		cap = cv2.VideoCapture(-1)
+	if args.video != None:
+		cap = cv2.VideoCapture(args.video)
 	else:
-		videoPath = sys.argv[1]
-		cap = cv2.VideoCapture(videoPath)
-		out_name = os.path.split(videoPath)[1]
-		out_path = '../Output/' + os.path.splitext(out_name)[0] + '.out'
+		cap = cv2.VideoCapture(-1)
+
+	if args.blockSize != None:
+		block_size = args.blockSize
+
+	if args.dThresh != None:
+		density_threshold = args.dThresh
+
+	if args.dDraw != None:
+		draw_density = args.dDraw
+
+	if args.saveFrames != None:
+		save_video = True
+		videoPath = args.saveFrames
+
+	if args.homography != None:
+		# Example Format:
+		# 1.26 0.70 -12.30; -0.64 2.08 79.20; -0.00 0.01 1.0
+		H = np.matrix(args.homography)
+
+	if args.homographyPath != None:
+		with open(args.homographyPath) as f:
+			content = f.readlines()[0]
+		H = np.matrix(content)
 
 	# Create some random colors
 	color = np.random.randint(0,255,(num_colors,3))
 
 	#Load Cascades
-	full_body_cascade = cv2.CascadeClassifier('../Cascades/full_body_cascade.xml')
-	#upper_body_cascade = cv2.CascadeClassifier('../Cascades/haarcascade_upperbody.xml')
+	full_body_cascade = cv2.CascadeClassifier(
+		'../Cascades/full_body_cascade.xml')
+	upper_body_cascade = cv2.CascadeClassifier(
+		'../Cascades/haarcascade_upperbody.xml')
 
 	 # Grab first frame
 	ret, prev = cap.read()
@@ -306,6 +424,9 @@ if __name__ == '__main__':
 		# Check if read was successful
 		if not ret:
 			break
+
+		# Update previous frame
+		prev = frame
 
 		# Convert to grey scale
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -344,18 +465,47 @@ if __name__ == '__main__':
 					del tracks[index]
 		
 		# Draw Tracks
-		frame = drawTracks(frame, tracks, frame_num)
+		mask = drawTracks(frame, tracks, frame_num)
+		frame = cv2.add(np.uint8(0.5*frame), np.uint8(0.5*mask))
 
+		# Show frame
 		cv2.imshow('Frame', frame)
 
+		# If save video true then write frame to specified location
 		if save_video:
-			 cv2.imwrite('../Output/Video/{:0>5d}.bmp'.format(frame_num), frame)
+			 cv2.imwrite('{}{:0>5d}.bmp'.format(videoPath, frame_num), frame)
 
+		# Handle keyboard input
 		k = cv2.waitKey(7) & 0xff
+
+		# If esc key pressed then exit loop
 		if k == 27:
 			break
 
+		# Increment frame count
 		frame_num += 1
 
+	for i,track in enumerate(tracks):
+		track.applyMatrix(H)
+		track.end(frame_num)
+
+	if len(tracks) > 1:
+		sp = cleanTracks(tracks)
+
+		n = len(sp)
+		for i in range(n):
+			index = n - i - 1
+
+			if sp[index] == 0:
+				del tracks[index]
+
+	tracks_mask = drawTracks(prev, tracks, frame_num)
+	warped = cv2.warpPerspective(prev, H, (prev.shape[1], prev.shape[0]))
+	img = cv2.add(np.uint8(warped), np.uint8(tracks_mask))
+	cv2.imshow('Tracks', img)
+
+	cv2.waitKey()
+
+	# Clean up scene
 	cap.release()
 	cv2.destroyAllWindows()

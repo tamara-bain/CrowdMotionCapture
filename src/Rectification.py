@@ -1,14 +1,27 @@
+import argparse
+import sys
+
 import numpy as np
 import math
 import cv2
-import sys
 
-help = 'Usage: python3 Rectification.py <image file>'
-
+parser = argparse.ArgumentParser(
+		prog='Rectification', 
+		usage='python %(prog)s.py [options]')
+parser.add_argument(
+	'--video', 
+	type=str, 
+	help='path to input video')
+parser.add_argument(
+	'--image', 
+	type=str, 
+	help='path to input image')
 
 dragging = False
 m_x = m_y = 0
 points = []
+
+# Handles mouse events
 def on_mouse(event,x,y,flags,param):
 	global dragging, m_x, m_y
 	if event == cv2.EVENT_LBUTTONDOWN:
@@ -148,8 +161,8 @@ def MetricRectification(lines):
 
 	return invH2
 
+# Get rectification matrix
 def getRectification(img):
-	# Get rectification matrix
 	print('Instructions:')
 	print('1: You need to pick two pairs of parallel lines.')
 	print('   Each line requires two points. To get a point')
@@ -157,61 +170,29 @@ def getRectification(img):
 	print('   lines are selected press the return key.')
 	print('2: Repeat the process but with two pairs of')
 	print('   orthoganal lines.')
-#	cv2.imshow('Original', img)
 
+	# Get lines used for affine rectification
 	lines = getLines(img)
 
-#	lines = np.ones((8, 3))
-#	lines[0][0] = 220.
-#	lines[1][0] = 499.
-#	lines[2][0] = 257.
-#	lines[3][0] = 527.
-#	lines[4][0] = 160.
-#	lines[5][0] = 494.
-#	lines[6][0] = 214.
-#	lines[7][0] = 449.
-#
-#	lines[0][1] = 299.
-#	lines[1][1] = 36. 
-#	lines[2][1] = 388.
-#	lines[3][1] = 98. 
-#	lines[4][1] = 169.
-#	lines[5][1] = 256.
-#	lines[6][1] = 29. 
-#	lines[7][1] = 83. 
-
+	# Calculate affine rectification given the lines
 	H1 = AffineRectification(lines)
 
-	affine_img_retification = cv2.warpPerspective(img, H1, (img.shape[1], img.shape[0]))
-#	cv2.imshow('Affine Retification', affine_img_retification)
+	# Apply affine rectification to image
+	affine_img_retification = cv2.warpPerspective(
+		img, 
+		H1, 
+		(img.shape[1], img.shape[0]))
 
+	# Get lines used for metric rectification
 	lines = getLines(affine_img_retification)
 
-#	lines = np.ones((8, 3))
-#	lines[0][0] = 216.
-#	lines[1][0] = 339.
-#	lines[2][0] = 424.
-#	lines[3][0] = 249.
-#	lines[4][0] = 307.
-#	lines[5][0] = 340.
-#	lines[6][0] = 215.
-#	lines[7][0] = 425.
-#
-#	lines[0][1] = 91. 
-#	lines[1][1] = 123.
-#	lines[2][1] = 78. 
-#	lines[3][1] = 169.
-#	lines[4][1] = 50. 
-#	lines[5][1] = 123.
-#	lines[6][1] = 93. 
-#	lines[7][1] = 78. 
-
+	# Calculate metric rectification given the lines
 	H2 = MetricRectification(lines)
+
+	# Combine affine and metric rectification
 	H3 = H2*H1
 
-#	metric_img_retification = cv2.warpPerspective(affine_img_retification, H3, (img.shape[1], img.shape[0]))
-#	cv2.imshow('Metric Retification', metric_img_retification)
-
+	# Create window and GUI for user to rotate, scale, and translate results
 	cv2.namedWindow('image')
 	cv2.createTrackbar('Angle','image',0,360,nothing)
 	cv2.createTrackbar('Scale','image',0,5000,nothing)
@@ -219,6 +200,7 @@ def getRectification(img):
 	cv2.createTrackbar('Y','image',-img.shape[1],img.shape[1],nothing)
 
 	while(1):
+		# Get current value of track bars
 		angle = cv2.getTrackbarPos('Angle','image')
 		scale = cv2.getTrackbarPos('Scale','image')
 
@@ -228,6 +210,7 @@ def getRectification(img):
 		s = scale/1000.
 		r = math.radians(angle)
 
+		# Create rotation matrix given the angle
 		R = np.eye(3)
 		R[0][0] = s*math.cos(r)
 		R[0][1] = -s*math.sin(r)
@@ -238,24 +221,32 @@ def getRectification(img):
 
 		H = np.dot(H3, H1)
 
+		# Calculate the center of the image
 		center_1 = np.ones((3, 1))
 		center_1[0][0] = img.shape[0]/2.
 		center_1[1][0] = img.shape[1]/2.
 
+		# Center image
 		center_2 = np.dot(H, center_1)
 
+		# Calculate translation matrix
 		T = np.eye(3)
 
 		T[0][2] = -center_2[0][0]/2.
 		T[1][2] = -center_2[1][0]/2.
 
-		R = np.dot(R,T)
-		H = np.dot(R,H)
+		# Apply translation to rotation matrix
+		Transform = np.dot(R,T)
+		# Apply transform to homography
+		H = np.dot(Transform,H)
 
+		# Warp image according to new homography
 		img2 = cv2.warpPerspective(img, H, (img.shape[1], img.shape[0]))
 		
+		# Show warped image
 		cv2.imshow('image', img2)
 
+		# Handle key board input
 		k = cv2.waitKey(30) & 0xFF
 		if k == 27:
 			exit()
@@ -266,14 +257,38 @@ def getRectification(img):
 
 	return H
 
-# Test
+# Run Program
 if __name__ == '__main__':
-	if len(sys.argv) < 2:
-		print(help)
+	parser.print_help()
+
+	# Parse Arguments
+	args = parser.parse_args(sys.argv[1:])
+
+	img = None
+
+	# Get video file if given
+	if args.video != None:
+		cap = cv2.VideoCapture(args.video)
+		ret, img = cap.read()
+		if ret == None:
+			print "Error getting frame from video."
+			exit()
+
+	# Get image
+	if args.image != None:
+		img = cv2.imread(args.image)
+		
+	if img == None:
 		img = cv2.imread('../Images/Test/floor.jpg')
-	else:
-		img = cv2.imread(sys.argv[1])
 
-	getRectification(img)
+	H = getRectification(img)
 
-	cv2.waitKey()
+	# Print homography matrix
+	r, c = H.shape
+	out = ''
+	for i in range(r):
+		out += ' '.join(map(str, H[i,:]))
+		if i < r-1:
+			out += '; '
+	
+	print(out)
