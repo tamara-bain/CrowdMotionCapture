@@ -64,15 +64,25 @@ parser.add_argument(
 
 # Write tracks to file
 def outputTracks(tracks, outputPath):
+	# Open file
 	f = open(outputPath, 'w')
 
+	# Write tracks start frame and frame number:
+	# Example:
+	# 1 20
+	# 5 5
+	#
+	# So track 1 will start at frame 1 and go for 20 frames
+	# and track 2 will start at frame 5 and go for 5 frames
 	for i,track in enumerate(tracks):
 		frames = track.getNumberOfFrames()
 		start = track.startFrame
 		f.write(str(start) + ' ' + str(frames) + '\n')
 
+	# Write blank line
 	f.write('\n')
 
+	# Write positions of tracks
 	for i,track in enumerate(tracks):
 		frames = track.getNumberOfFrames()
 		for j in range(0,frames):
