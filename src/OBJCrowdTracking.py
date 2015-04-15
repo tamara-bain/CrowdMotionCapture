@@ -175,7 +175,7 @@ def getDensity(img, prev, density, step=16):
 	# Get size of density array
 	sy, sx = density.shape[:2]
 	
-	# Calculate temperal difference
+	# Calculate temporal difference
 	td = np.int16(img) - np.int16(prev)
 	
 	# Calculate density
@@ -194,7 +194,7 @@ def getDensity(img, prev, density, step=16):
 			# Create threshold image of block
 			thresh = abs(b) > threshold
 			
-			# Iterate over threshold image and caculate number of changes
+			# Iterate over threshold image and calculate number of changes
 			d = np.count_nonzero(thresh)
 			
 			# Density is the amount of change in a block divided by block size
@@ -345,7 +345,7 @@ def updateTracks(tracks, detected, prevgray, gray, frame):
 #			print((track.bx,track.by,track.bw,track.bh))
 
 			if distance < found_tracks_distance[k] and distance < thres_dis:
-				# Check if a deteceted object already clamed block
+				# Check if a detected object already claimed block
 				# if so break tie
 				update = True
 				for j in range(k):
@@ -504,7 +504,7 @@ if __name__ == '__main__':
 		# Update previous frame
 		prev = frame
 
-		# Convert to grey scale
+		# Convert to gray scale
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
 		# Calculate Density
