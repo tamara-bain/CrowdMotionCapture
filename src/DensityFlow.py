@@ -36,18 +36,21 @@ parser.add_argument(
     type=int, 
     help='size of blocks used for density.')
 
+def setColor(block, color):
+    block[:, :, 0] = color[0]
+    block[:, :, 1] = color[1]
+    block[:, :, 2] = color[2]
+
+    return block
+
 def drawDensity(img, prev, step=16):
     global density
     h, w = img.shape[:2]
-    y, x = np.mgrid[step/2:h:step, step/2:w:step].reshape(2,-1)
-    x = np.int32(x)
-    y = np.int32(y)
-    
-    
+
     td = np.int16(img) - np.int16(prev)
     
-    sx = int(w/block_size)
-    sy = int(h/block_size)
+    sx = int(w/step)
+    sy = int(h/step)
     
     if density == None:
         density = np.zeros((sy, sx))
@@ -56,13 +59,13 @@ def drawDensity(img, prev, step=16):
     
     for i in range(sx):
         for j in range(sy):
-            if i*block_size+block_size > w:
+            if i*step+step > w:
                 continue
             
-            if j*block_size+block_size > h:
+            if j*step+step > h:
                 continue
             
-            b = td[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size]
+            b = td[j*step:j*step+step, i*step:i*step+step]
             thresh = abs(b) > threshold
             
             d = 0
@@ -71,20 +74,34 @@ def drawDensity(img, prev, step=16):
                     if thresh[ki][kj]:
                         d += 1
                     
-            density[j][i] += 0.5*d/(block_size*block_size)
+            density[j][i] += 0.5*d/(step*step)
             
-            mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 0] = 0
-            mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 1] = 0
-            mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 2] = 255
-  
             if density[j][i] < 0.02:
-                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 0] = 0
-                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 1] = 255
-                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 2] = 0
+                setColor(
+                    mask[j*step:j*step+step, i*step:i*step+step, :], 
+                    (0, 255, 0))
             elif density[j][i] < 0.5:
-                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 0] = 0
-                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 1] = 255
-                mask[j*block_size:j*block_size+block_size, i*block_size:i*block_size+block_size, 2] = 255
+                v = 1.0 - 2.*(density[j][i] - 0.52)
+
+                if v > 1.0:
+                    v = 1.0
+                if v < 0.0:
+                    v = 0.0
+
+                setColor(
+                    mask[j*step:j*step+step, i*step:i*step+step, :], 
+                    (0, 255, np.uint8(v*255)))
+            else:
+                v = 1.0 - 2.*(density[j][i] - 0.5)
+                
+                if v > 1.0:
+                    v = 1.0
+                if v < 0.0:
+                    v = 0.0
+
+                setColor(
+                    mask[j*step:j*step+step, i*step:i*step+step, :], 
+                    (0, np.uint8(v*255), 255))
         
             density[j][i] -= 0.05
             
@@ -125,7 +142,7 @@ if __name__ == '__main__':
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
         # Draw density
-        d_img = drawDensity(gray, prevgray)
+        d_img = drawDensity(gray, prevgray, block_size)
         cv2.imshow('de', cv2.add(np.uint8(0.6*img), np.uint8(0.4*d_img)))
         prevgray = gray
 

@@ -110,6 +110,13 @@ def drawDetected(frame, detected, color):
 		(x,y,w,h) = detected[i]
 		cv2.rectangle(frame, (x, y), (x+w, y+h), color, 3)
 
+def setDensityBlockColor(block, color):
+	block[:, :, 0] = color[0]
+	block[:, :, 1] = color[1]
+	block[:, :, 2] = color[2]
+
+	return block
+
 # Create density mask
 def drawDensity(img, density, step=16):
 	# Get width and height
@@ -130,18 +137,32 @@ def drawDensity(img, density, step=16):
 			if j*step+step > h:
 				continue
 
-			mask[j*step:j*step+step, i*step:i*step+step, 1] = 0
-			mask[j*step:j*step+step, i*step:i*step+step, 2] = 255
-			mask[j*step:j*step+step, i*step:i*step+step, 0] = 0
-
 			if density[j][i] < 0.02:
-				mask[j*step:j*step+step, i*step:i*step+step, 0] = 0
-				mask[j*step:j*step+step, i*step:i*step+step, 1] = 255
-				mask[j*step:j*step+step, i*step:i*step+step, 2] = 0
+				setDensityBlockColor(
+					mask[j*step:j*step+step, i*step:i*step+step, :], 
+					(0, 255, 0))
 			elif density[j][i] < 0.5:
-				mask[j*step:j*step+step, i*step:i*step+step, 0] = 0
-				mask[j*step:j*step+step, i*step:i*step+step, 1] = 255
-				mask[j*step:j*step+step, i*step:i*step+step, 2] = 255
+				v = 1.0 - 2.*(density[j][i] - 0.52)
+
+				if v > 1.0:
+					v = 1.0
+				if v < 0.0:
+					v = 0.0
+
+				setDensityBlockColor(
+					mask[j*step:j*step+step, i*step:i*step+step, :], 
+					(0, 255, np.uint8(v*255)))
+			else:
+				v = 1.0 - 2.*(density[j][i] - 0.5)
+				
+				if v > 1.0:
+					v = 1.0
+				if v < 0.0:
+					v = 0.0
+
+				setDensityBlockColor(
+					mask[j*step:j*step+step, i*step:i*step+step, :], 
+					(0, np.uint8(v*255), 255))
 
 	return mask
 
