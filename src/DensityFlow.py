@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 ##############################################################################
 # DensityFlow.py
 # Code Written By: Michael Feist, Maciej Ogrocki, and Tamara Bain
@@ -93,7 +91,7 @@ def drawDensity(img, prev, step=16):
                     (0, 255, np.uint8(v*255)))
             else:
                 v = 1.0 - 2.*(density[j][i] - 0.5)
-                
+
                 if v > 1.0:
                     v = 1.0
                 if v < 0.0:

@@ -1,4 +1,9 @@
-#!/usr/bin/env python
+##############################################################################
+# OpticFlow.py
+# Code mostly from:
+# 
+# "OReilly Programming Computer Vision with Python", at end of page 216
+##############################################################################
 
 import numpy as np
 import cv2
