@@ -56,6 +56,28 @@ parser.add_argument(
 	'--homographyPath', 
 	type=str, 
 	help='reads numpy 3x3 homography matrix from file.')
+parser.add_argument(
+	'--output', 
+	type=str, 
+	help='path to output tracks.')
+
+
+# Write tracks to file
+def outputTracks(tracks, outputPath):
+	f = open(outputPath, 'w')
+
+	for i,track in enumerate(tracks):
+		frames = track.getNumberOfFrames()
+		start = track.startFrame
+		f.write(str(start) + ' ' + str(frames) + '\n')
+
+	f.write('\n')
+
+	for i,track in enumerate(tracks):
+		frames = track.getNumberOfFrames()
+		for j in range(0,frames):
+			a,b = track.points[j].getCoords()
+			f.write(str(int(a)) + ' ' + str(int(b)) + '\n')
 
 # Draw rectangles over areas detected by a cascade
 def drawDetected(frame, detected, color):
@@ -293,9 +315,17 @@ def updateTracks(tracks, detected, prevgray, gray, frame):
 
 
 		if found_tracks[k] >= 0:
+			step = tracks[found_tracks[k]].lastFound
+			stepx = (mxd - tracks[found_tracks[k]].x)/step
+			stepy = (myd - tracks[found_tracks[k]].y)/step
+			for i in range(step):
+				mx = (i+1)*stepx + tracks[found_tracks[k]].x
+				my = (i+1)*stepy + tracks[found_tracks[k]].y
+				tracks[found_tracks[k]].addPoint(mx, my)
+
 			tracks[found_tracks[k]].x = mxd
 			tracks[found_tracks[k]].y = myd
-			tracks[found_tracks[k]].addPoint(mxd, myd)
+			
 			tracks[found_tracks[k]].setBoundingBox(x, y, w, h)
 			tracks[found_tracks[k]].lastFound = 0
 		else:
@@ -414,8 +444,10 @@ if __name__ == '__main__':
 	# Allocate memory for density array
 	density = np.zeros((dh, dw))
 
+	# List to store tracks
 	tracks = []
 
+	# Keeps track of the current frame
 	frame_num = 0
 	while(1):
 		# Grab new frame
@@ -485,10 +517,12 @@ if __name__ == '__main__':
 		# Increment frame count
 		frame_num += 1
 
+	# Apply homography to each track and end track in still active
 	for i,track in enumerate(tracks):
 		track.applyMatrix(H)
 		track.end(frame_num)
 
+	# Clean up short tracks
 	if len(tracks) > 1:
 		sp = cleanTracks(tracks)
 
@@ -499,11 +533,16 @@ if __name__ == '__main__':
 			if sp[index] == 0:
 				del tracks[index]
 
+	# Draw tracks on top of previous frame with applied homography
 	tracks_mask = drawTracks(prev, tracks, frame_num)
 	warped = cv2.warpPerspective(prev, H, (prev.shape[1], prev.shape[0]))
 	img = cv2.add(np.uint8(warped), np.uint8(tracks_mask))
 	cv2.imshow('Tracks', img)
 
+	if args.output != None:
+		outputTracks(tracks, args.output)
+
+	# Wait for user to press a key
 	cv2.waitKey()
 
 	# Clean up scene

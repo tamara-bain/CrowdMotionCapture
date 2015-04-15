@@ -21,6 +21,7 @@ class OBJTrackInfo:
 		# Path
 		self.points = []
 
+		# How long since the object was last seen?
 		self.lastFound = 0
 
 		# Center of bounding box
@@ -53,9 +54,7 @@ class OBJTrackInfo:
 		return self.started and not self.ended
 
 	def getNumberOfFrames(self):
-		if self.active():
-			return len(self.points)
-		return self.endFrame - self.startFrame
+		return len(self.points)
 
 	def addPoint(self, x, y):
 		self.points.append(Point(x,y))
