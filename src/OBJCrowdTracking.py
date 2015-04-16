@@ -137,12 +137,9 @@ def drawDensity(img, density, step=16):
 			if j*step+step > h:
 				continue
 
-			if density[j][i] < 0.02:
-				setDensityBlockColor(
-					mask[j*step:j*step+step, i*step:i*step+step, :], 
-					(0, 255, 0))
-			elif density[j][i] < 0.5:
-				v = 1.0 - 2.*(density[j][i] - 0.52)
+			# Using calculated density draw the density map
+			if density[j][i] < 0.5:
+				v = 2.*density[j][i]
 
 				if v > 1.0:
 					v = 1.0
@@ -154,7 +151,7 @@ def drawDensity(img, density, step=16):
 					(0, 255, np.uint8(v*255)))
 			else:
 				v = 1.0 - 2.*(density[j][i] - 0.5)
-				
+
 				if v > 1.0:
 					v = 1.0
 				if v < 0.0:
@@ -516,15 +513,16 @@ if __name__ == '__main__':
 			frame = cv2.add(np.uint8(0.6*frame), np.uint8(0.4*mask))
 
 		# Find objects in the scene (Example: Full Body)
-		detected = full_body_cascade.detectMultiScale(frame, 1.2, 5)
+		detected = full_body_cascade.detectMultiScale(frame, 1.05, 5)
 		#np.append(detected, upper_body_cascade.detectMultiScale(frame, 1.2, 5))
 
 		# Find detected areas that are not moving and remove them
-		sp = removeDetected(detected, density, block_size)
-		detected = detected[sp==1]
+		if len(detected) > 0:
+			sp = removeDetected(detected, density, block_size)
+			detected = detected[sp==1]
 
-		# Connect new detected objects with previously tracked
-		tracks = updateTracks(tracks, detected, prevgray, gray, frame_num)
+			# Connect new detected objects with previously tracked
+			tracks = updateTracks(tracks, detected, prevgray, gray, frame_num)
 
 		# Draw bounding box around detected
 		#drawDetected(frame, detected, (0, 255, 0))
