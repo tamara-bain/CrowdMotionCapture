@@ -6,7 +6,7 @@
 # R. Hartley and A. Zisserman, 'Multiple View Geometry',
 # Cambridge University Publishers, 2nd ed. 2004
 #
-# Algorithm first takes two pairs of parallel lines calculates the Affine
+# The algorithm first takes two pairs of parallel lines calculates the Affine
 # rectification. This takes the perspective image to an affine image.
 #
 # Next the algorithm takes two pairs of orthogonal lines calculates Metric
