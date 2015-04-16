@@ -26,6 +26,9 @@ from OBJTrackInfo import OBJTrackInfo
 
 num_colors = 100
 
+casscade_scale = 1.05
+casscade_group_threshold = 7
+
 threshold = 50
 block_size = 16
 
@@ -47,6 +50,14 @@ parser.add_argument(
 	'--video', 
 	type=str, 
 	help='path to input video.')
+parser.add_argument(
+	'--scale', 
+	type=float, 
+	help=' Coefficient of the detection window increase.')
+parser.add_argument(
+	'--groupThreshold', 
+	type=int, 
+	help='Coefficient to regulate the similarity threshold.')
 parser.add_argument(
 	'--blockSize', 
 	type=int, 
@@ -437,6 +448,12 @@ if __name__ == '__main__':
 	else:
 		cap = cv2.VideoCapture(-1)
 
+	if args.scale != None:
+		casscade_scale = args.scale
+
+	if args.groupThreshold != None:
+		casscade_group_threshold = args.groupThreshold
+
 	if args.blockSize != None:
 		block_size = args.blockSize
 
@@ -513,7 +530,10 @@ if __name__ == '__main__':
 			frame = cv2.add(np.uint8(0.6*frame), np.uint8(0.4*mask))
 
 		# Find objects in the scene (Example: Full Body)
-		detected = full_body_cascade.detectMultiScale(frame, 1.05, 5)
+		detected = full_body_cascade.detectMultiScale(
+			frame, 
+			casscade_scale, 
+			casscade_group_threshold)
 		#np.append(detected, upper_body_cascade.detectMultiScale(frame, 1.2, 5))
 
 		# Find detected areas that are not moving and remove them

@@ -1,0 +1,1 @@
+python ../src/OBJCrowdTracking.py --video ../Videos/Test/HUB3.mov --blockSize 16 --homographyPath ../Input/HomographyHUB.in --groupThreshold 15 --scale 1.05

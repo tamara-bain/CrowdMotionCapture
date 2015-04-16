@@ -172,7 +172,7 @@ if __name__ == '__main__':
         # Draw density
         d_img = drawDensity(gray, prevgray, block_size)
         combined = cv2.add(np.uint8(0.6*img), np.uint8(0.4*d_img))
-        cv2.imshow('de', combined)
+        cv2.imshow('Density', combined)
         prevgray = gray
 
         # If save video true then write frame to specified location
