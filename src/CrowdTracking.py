@@ -41,8 +41,8 @@ max_energy = 7.0
 
 # Find New Points
 newPoints_on = True
-tracks_on = False
-draw_on = False
+tracks_on = True
+draw_on = True
 
 
 def findGoodPoints(p0, p1, tracks, st):
@@ -274,7 +274,7 @@ if __name__ == '__main__':
                     a,b = new.ravel()
                     c,d = old.ravel()
                     cv = i % maxCorners
-                    frame = cv2.circle(frame,(a,b),5,color[cv].tolist(),-1)
+                    cv2.circle(frame,(a,b),2, (0,255,0),-1)
 
             # Draw tracks
             if tracks_on and len(tracks) > 2:
@@ -293,11 +293,11 @@ if __name__ == '__main__':
                         a,b = tracks[i][j].ravel()
                         c,d = tracks[i-1][j].ravel()
                         cv = i % maxCorners
-                        mask = cv2.line(mask, 
-                                        (a,b),
-                                        (c,d), 
-                                        color[cv].tolist(), 
-                                        2)
+                        cv2.line(mask,
+                                (a,b),
+                                (c,d),
+                                (0, 0, 255),
+                                2)
 
         # Combine current frame and mask 
         # (draws points and tracks on frame)

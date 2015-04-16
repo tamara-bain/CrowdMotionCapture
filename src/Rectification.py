@@ -3,7 +3,7 @@
 # Code Written By: Michael Feist
 #
 # Algorithm found in Section 2.7 of:
-# R. Hartley and A. Zisserman, ‘Multiple View Geometry’, 
+# R. Hartley and A. Zisserman, 'Multiple View Geometry',
 # Cambridge University Publishers, 2nd ed. 2004
 #
 # Algorithm first takes two pairs of parallel lines calculates the Affine
