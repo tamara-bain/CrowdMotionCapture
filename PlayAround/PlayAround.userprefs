@@ -1,9 +1,8 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\ExtendedFlycam.cs">
+  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workbench ActiveDocument="..\LittleWalkingPeople\Assets\MovePedestrians.cs">
     <Files>
-      <File FileName="Assets\Scripts\MovePedestrians.cs" Line="8" Column="25" />
-      <File FileName="Assets\Scripts\ExtendedFlycam.cs" Line="35" Column="28" />
+      <File FileName="..\LittleWalkingPeople\Assets\MovePedestrians.cs" Line="31" Column="49" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
