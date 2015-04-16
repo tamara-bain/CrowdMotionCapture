@@ -51,8 +51,13 @@ max_energy = 7.0
 
 # Find New Points
 newPoints_on = False
+
+# Draw tracks during recording (First Pass)
 tracks_on = False
+# Draw tracked points
 draw_on = False
+
+save_video = False
 
 parser = argparse.ArgumentParser(
         prog='CrowdTracking', 
@@ -644,6 +649,10 @@ if __name__ == '__main__':
                     cv2.line(mask, (a,b), (c,d), color[cv].tolist(), 2)
 
         img = cv2.add(np.uint8(0.5*frame), mask)
+
+        # If save video true then write frame to specified location
+        if save_video:
+             cv2.imwrite('{}{:0>5d}.bmp'.format(videoPath, frame_count), img)
 
         cv2.imshow('frame', img)
 
