@@ -21,7 +21,7 @@
 # To run:
 # python Rectification.py [OPTIONS]
 #
-# For Help:
+# For help:
 # python Rectification.py --help
 ##############################################################################
 

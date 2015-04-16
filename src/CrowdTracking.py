@@ -15,7 +15,7 @@
 # To run:
 # python CrowdTracking.py [OPTIONS]
 #
-# For Help:
+# For help:
 # python CrowdTracking.py --help
 ##############################################################################
 

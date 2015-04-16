@@ -13,10 +13,10 @@ All Python code is located in the src/ directory.
 
 Displays a density map over the video.
 
-To run:
+**To run:**
 python DensityFlow.py [OPTIONS]
 
-For Help:
+**For help:**
 python DensityFlow.py --help
 
 ### CrowdTracking.py
@@ -30,20 +30,20 @@ After the program has all the cleaned up tracks it will display all the
 tracks and replay the video showing the recorded tracks overlaid with the
 video.
 
-To run:
+**To run:**
 python CrowdTracking.py [OPTIONS]
 
-For Help:
+**For help:**
 python CrowdTracking.py --help
 
 ### OBJCrowdTracking.py
 
 This code handles crowd tracking using Haar Cascades and object detection.
 
-To run:
+**To run:**
 python OBJCrowdTracking.py [OPTIONS]
 
-For Help:
+**For help:**
 python OBJCrowdTracking.py --help
 
 ### Rectification.py
@@ -60,10 +60,10 @@ scale, rotate, and translate the results.
 Finally, the resulting matrix is printed to the screen where the user can
 copy it for uses in other programs.
 
-To run:
+**To run:**
 python Rectification.py [OPTIONS]
 
-For Help:
+**For help:**
 python Rectification.py --help
 
 ## Unity Program

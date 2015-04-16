@@ -8,7 +8,7 @@
 # To run:
 # python OBJCrowdTracking.py [OPTIONS]
 #
-# For Help:
+# For help:
 # python OBJCrowdTracking.py --help
 ##############################################################################
 

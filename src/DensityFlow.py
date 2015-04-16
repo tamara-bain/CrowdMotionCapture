@@ -7,7 +7,7 @@
 # To run:
 # python DensityFlow.py [OPTIONS]
 #
-# For Help:
+# For help:
 # python DensityFlow.py --help
 ##############################################################################
 
