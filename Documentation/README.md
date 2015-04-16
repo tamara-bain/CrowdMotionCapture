@@ -1,15 +1,22 @@
-# Libraries
+## Haar Cascade Training Data
+
+We created our own haar cascade to detect full bodies. The data used to train 
+can be founnd at the following URL:
+
+http://www.lookingatpeople.com/download-daimler-ped-det-benchmark/index.html
+
+## Libraries
 
 We are using OpenCV 2.4.10 with Python 2.7. All Python code was ran and tested 
 using Ubuntu 14.04 LTS.
 
-# Programs
+## Programs
 
-## Python Programs
+### Python Programs
 
 All Python code is located in the src/ directory.
 
-### DensityFlow.py
+#### DensityFlow.py
 
 Displays a density map over the video.
 
@@ -19,7 +26,7 @@ python DensityFlow.py [OPTIONS]
 **For help:**
 python DensityFlow.py --help
 
-### CrowdTracking.py
+#### CrowdTracking.py
 
 This code handles crowd tracking using Lucas-Kanade. The program runs 
 through the video twice. In the first run through the program simply tracks
@@ -36,7 +43,7 @@ python CrowdTracking.py [OPTIONS]
 **For help:**
 python CrowdTracking.py --help
 
-### OBJCrowdTracking.py
+#### OBJCrowdTracking.py
 
 This code handles crowd tracking using Haar Cascades and object detection.
 
@@ -46,7 +53,7 @@ python OBJCrowdTracking.py [OPTIONS]
 **For help:**
 python OBJCrowdTracking.py --help
 
-### Rectification.py
+#### Rectification.py
 
 The algorithm first takes two pairs of parallel lines calculates the Affine
 rectification. This takes the perspective image to an affine image.
@@ -66,13 +73,13 @@ python Rectification.py [OPTIONS]
 **For help:**
 python Rectification.py --help
 
-## Unity Program
+### Unity Program
 
 There is also a 3D player that takes outputed tracks from either 
 CrowdTracking.py or OBJCrowdTracking.py and displays the recorded data in a 
 3D enviroment.
 
-The two programs are:
+The two versions of the program are:
 
 
 LittleWalkingPeople.exe
