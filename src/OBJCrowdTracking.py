@@ -67,6 +67,14 @@ parser.add_argument(
 	type=float, 
 	help='threshold of needed density for accepting objects.')
 parser.add_argument(
+	'--dGrow', 
+	type=float, 
+	help='how fast does the density increase with movement.')
+parser.add_argument(
+	'--dDecay', 
+	type=float, 
+	help='how fast does the density dissipate over time.')
+parser.add_argument(
 	'--dDraw', 
 	type=bool, 
 	help='if true the density will be drawn over the image.')
@@ -86,7 +94,7 @@ parser.add_argument(
 	'--output', 
 	type=str, 
 	help='path to output tracks.')
-
+	
 
 # Write tracks to file
 def outputTracks(tracks, outputPath):
@@ -204,19 +212,22 @@ def getDensity(img, prev, density, step=16):
 			
 			# Iterate over threshold image and calculate number of changes
 			d = np.count_nonzero(thresh)
+
+			# Decrease density over time
+			density[j][i] -= density_decay
+
+			# Set limits on density
+			if (density[j][i] < 0):
+				density[j][i] = 0
 			
 			# Density is the amount of change in a block divided by block size
 			density[j][i] += density_growth*d/(step*step)
-			
-			# Decrease density over time
-			density[j][i] -= density_decay
 			
 			# Set limits on density
 			if (density[j][i] > 1):
 				density[j][i] = 1
 				
-			if (density[j][i] < 0):
-				density[j][i] = 0
+			
 
 	return density
 
@@ -370,12 +381,15 @@ def updateTracks(tracks, detected, prevgray, gray, frame):
 
 		if found_tracks[k] >= 0:
 			step = tracks[found_tracks[k]].lastFound
-			stepx = (mxd - tracks[found_tracks[k]].x)/step
-			stepy = (myd - tracks[found_tracks[k]].y)/step
-			for i in range(step):
-				mx = (i+1)*stepx + tracks[found_tracks[k]].x
-				my = (i+1)*stepy + tracks[found_tracks[k]].y
-				tracks[found_tracks[k]].addPoint(mx, my)
+			if step > 1:
+				stepx = (mxd - tracks[found_tracks[k]].x)/step
+				stepy = (myd - tracks[found_tracks[k]].y)/step
+				for i in range(step):
+					mx = (i+1)*stepx + tracks[found_tracks[k]].x
+					my = (i+1)*stepy + tracks[found_tracks[k]].y
+					tracks[found_tracks[k]].addPoint(mx, my)
+			else:
+				tracks[found_tracks[k]].addPoint(mxd, myd)
 
 			tracks[found_tracks[k]].x = mxd
 			tracks[found_tracks[k]].y = myd
@@ -459,6 +473,12 @@ if __name__ == '__main__':
 
 	if args.dThresh != None:
 		density_threshold = args.dThresh
+	
+	if args.dGrow != None:
+		density_growth = args.dGrow
+
+	if args.dDecay != None:
+		density_decay = args.dDecay
 
 	if args.dDraw != None:
 		draw_density = args.dDraw
