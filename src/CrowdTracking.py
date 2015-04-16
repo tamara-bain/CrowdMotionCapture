@@ -3,24 +3,34 @@
 # Code Written By: Michael Feist
 #
 # Description:
-# This code handles crowd tracking using Lucas-Kanade.
+# This code handles crowd tracking using Lucas-Kanade. The program runs 
+# through the video twice. In the first run through the program simply tracks
+# feature points using Lucas-Kanade. After it has ran through the video it
+# goes through the recorded tracks and tries to remove invalid tracks.
+#
+# After the program has all the cleaned up tracks it will display all the 
+# tracks and replay the video showing the recorded tracks overlaid with the
+# video.
 #
 # To run:
-# python CrowdTracking.py <video file>
+# python CrowdTracking.py [OPTIONS]
+#
+# For Help:
+# python CrowdTracking.py --help
 ##############################################################################
+
+import argparse
+import sys
+import os
 
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 import cv2
 import math
-import sys
-import os
+
 from Point import Point
 from TrackInfo import TrackInfo
 from Rectification import getRectification
-
-
-help = 'Usage: python CrowdTracking.py <video file>'
 
 # Parameters
 maxCorners = 300
@@ -40,26 +50,73 @@ distance2 = 7.5
 max_energy = 7.0
 
 # Find New Points
-newPoints_on = True
-tracks_on = True
-draw_on = True
+newPoints_on = False
+tracks_on = False
+draw_on = False
+
+parser = argparse.ArgumentParser(
+        prog='CrowdTracking', 
+        usage='python %(prog)s.py [options]')
+parser.add_argument(
+    '--video', 
+    type=str, 
+    help='path to input video.')
+parser.add_argument(
+    '--blockSize', 
+    type=int, 
+    help='size of blocks used for density.')
+parser.add_argument(
+    '--drawTracks', 
+    type=bool, 
+    help='if true draw tracks.')
+parser.add_argument(
+    '--drawPoints', 
+    type=bool, 
+    help='if true draw points being tracked.')
+parser.add_argument(
+    '--saveFrames', 
+    type=str, 
+    help='path to save images.')
+parser.add_argument(
+    '--homography', 
+    type=str, 
+    help='numpy 3x3 homography matrix.')
+parser.add_argument(
+    '--homographyPath', 
+    type=str, 
+    help='reads numpy 3x3 homography matrix from file.')
+parser.add_argument(
+    '--output', 
+    type=str, 
+    help='path to output tracks.')
 
 
-def findGoodPoints(p0, p1, tracks, st):
-    # Select good points
-    if (len(tracks) > track_len):
-        for i,(new,old) in enumerate(zip(p1,p0)):
-            if (len(tracks[-track_len]) > i):
-                a,b = new.ravel()
-                c,d = tracks[-track_len][i].ravel()
+# Write tracks to file
+def outputTracks(tracks, outputPath):
+    # Open file
+    f = open(outputPath, 'w')
 
-                diff = getDistance(a, b, c, d)
+    # Write tracks start frame and frame number:
+    # Example:
+    # 1 20
+    # 5 5
+    #
+    # So track 1 will start at frame 1 and go for 20 frames
+    # and track 2 will start at frame 5 and go for 5 frames
+    for i,track in enumerate(tracks):
+        frames = track.getNumberOfFrames()
+        start = track.startFrame
+        f.write(str(start) + ' ' + str(frames) + '\n')
 
-                if (diff < distance2):
-                    st[i] = 0
+    # Write blank line
+    f.write('\n')
 
-    return st
-
+    # Write positions of tracks
+    for i,track in enumerate(tracks):
+        frames = track.getNumberOfFrames()
+        for j in range(0,frames):
+            a,b = track.points[j].getCoords()
+            f.write(str(int(a)) + ' ' + str(int(b)) + '\n')
 
 def getNewPoints(img, img_old, points):
     # Calculate the temporal difference between two frames
@@ -180,19 +237,41 @@ def getDistance(a, b, c, d):
 
 
 if __name__ == '__main__':
-    print(help)
+    # Homography Matrix
+    H = np.eye(3)
 
-    out_path = '../Output/output.out'
+    # Parse Arguments
+    args = parser.parse_args(sys.argv[1:])
 
     # Get video file if given
     # Else open default camera
-    if len(sys.argv) < 2:
-        cap = cv2.VideoCapture(-1)
+    if args.video != None:
+        cap = cv2.VideoCapture(args.video)
     else:
-        videoPath = sys.argv[1]
-        cap = cv2.VideoCapture(videoPath)
-        out_name = os.path.split(videoPath)[1]
-        out_path = '../Output/' + os.path.splitext(out_name)[0] + '.out'
+        cap = cv2.VideoCapture(-1)
+
+    if args.blockSize != None:
+        blockSize = args.blockSize
+
+    if args.drawTracks != None:
+        tracks_on = args.drawTracks
+
+    if args.drawPoints != None:
+        draw_on = args.drawPoints
+
+    if args.saveFrames != None:
+        save_video = True
+        videoPath = args.saveFrames
+
+    if args.homography != None:
+        # Example Format:
+        # 1.26 0.70 -12.30; -0.64 2.08 79.20; -0.00 0.01 1.0
+        H = np.matrix(args.homography)
+
+    if args.homographyPath != None:
+        with open(args.homographyPath) as f:
+            content = f.readlines()[0]
+        H = np.matrix(content)
 
     # params for ShiTomasi corner detection
     feature_params = dict(maxCorners = maxCorners,
@@ -214,15 +293,12 @@ if __name__ == '__main__':
     ret, old_frame = cap.read()
     old_gray = cv2.cvtColor(old_frame, cv2.COLOR_BGR2GRAY)
 
-    # H = getRectification(old_frame)
-    H = np.eye(3)
-
     # Take second frame
     ret, frame = cap.read()
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Find new points, the function uses the difference
-    # between the images to know where movement occured
+    # between the images to know where movement occurred
     p0 = getNewPoints(frame_gray, old_gray, None)
 
     # Store tracks
@@ -247,8 +323,7 @@ if __name__ == '__main__':
         frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
         # Grab new points that are not being tacked
-        if newPoints_on:
-            p0 = getNewPoints(frame_gray, old_gray, p0)
+        p0 = getNewPoints(frame_gray, old_gray, p0)
 
         # Calculate optical flow and new location of points
         p1, st, err = cv2.calcOpticalFlowPyrLK(old_gray, 
@@ -261,9 +336,6 @@ if __name__ == '__main__':
         mask = np.zeros_like(old_frame)
 
         if p1 != None:
-            # Find points that don't move any more
-            st = findGoodPoints(p0, p1, tracks, st)
-
             # Remove invalid points (stationary)
             good_new = p1[st==1]
             good_old = p0[st==1]
@@ -406,11 +478,6 @@ if __name__ == '__main__':
         # Update frame count
         frame_count = frame_count+1
 
-
-
-
-##### IN DEVELOMENT ######
-
     # Clean up Tracks
     # Kill tracks that move more than 20 pixels between frames
 
@@ -486,15 +553,6 @@ if __name__ == '__main__':
             if dead_point:
                 dead_points[j] = 1
 
-
-    # Apply Rectification to Points
-    n = len(track_info)
-    for i in range(n):
-        track = track_info[i]
-        track.applyMatrix(H)
-
-    # Combine tracks?
-
     # Delete short tracks
     n = len(track_info)
     for i in range(n):
@@ -504,36 +562,38 @@ if __name__ == '__main__':
         if diff < distance2:
             track_info.pop(index)
 
-    # Calclate energy
+    # Apply Rectification to Points
+    n = len(track_info)
+    for i in range(n):
+        track = track_info[i]
+        track.applyMatrix(H)
+
+    # Calculate energy
     n = len(track_info)
     for i in range(n):
         index = n - i - 1
         e = track_info[index].calcMotionEnergy()
-#        print("Track ", index, " has energy ", e)
         if e > max_energy:
             track_info.pop(index)
-
-    # Does track stop
-#    n = len(track_info)
-#    for i in range(n):
-#        index = n - i - 1
-#        if track_info[index].doesMotionStop():
-#            track_info.pop(index)
 
     # Calculate direction
     n = len(track_info)
     for i in range(n):
         track_info[i].calcDirection()
 
-    # Remove Outlier Tracks
+    # Remove track outliers
     track_info = remove_tracks_with_slope(track_info, 1, 1.75)
     track_info = remove_tracks_with_slope(track_info, 2, 1)
 
-    # Group Tracks
-    
+    # Save tracks if output file given
+    if args.output != None:
+        outputTracks(track_info, args.output)
 
     # draw the tracks
-    old_frame_warp = cv2.warpPerspective(old_frame, H, (old_frame.shape[1], old_frame.shape[0]))
+    old_frame_warp = cv2.warpPerspective(
+        old_frame, 
+        H, 
+        (old_frame.shape[1], old_frame.shape[0]))
     mask = np.zeros_like(old_frame_warp)
 
     for i,track in enumerate(track_info):
@@ -545,76 +605,17 @@ if __name__ == '__main__':
             cv = i % maxCorners
             cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
 
-
     img = cv2.add(np.uint8(0.5*old_frame_warp), mask)
 
     cv2.imshow('tracks', img)
 
-    track_i = 0
-
-    while(1):
-        track = track_info[track_i]
-        frames = track.getNumberOfFrames()
-        X = np.zeros(frames)
-        Y = np.zeros(frames)
-        
-        for i in range(0,frames):
-            a,b = track.points[i].getCoords()
-            X[i] = a
-            Y[i] = b
-
-        p2 = np.poly1d(np.polyfit(X, Y, 2))
-        p1 = np.poly1d(np.polyfit(X, Y, 1))
-
-        mask = np.zeros_like(old_frame_warp)
-
-        for i in range(mask.shape[1]):
-            j1 = p1(i)
-            j2 = p2(i)
-
-            if j1 != j1 or j2 != j2:
-                continue
-
-            if j1 >= 0 or j1 <= mask.shape[0]:
-                j = int(j1)
-                cv2.circle(mask, (i,j), 1, (255, 0, 0), 2)
-
-            if j2 >= 0 or j2 <= mask.shape[0]:
-                j = int(j2)
-                cv2.circle(mask, (i,j), 1, (0, 255, 0), 2)
-            
-
-        for i in range(1,frames):
-            a,b = track.points[i-1].getCoords()
-            c,d = track.points[i].getCoords()
-
-            cv = track_i % maxCorners
-            cv2.line(mask, (a,b),(c,d), color[cv].tolist(), 2)
-
-
-        img = cv2.add(np.uint8(0.5*old_frame_warp), mask)
-
-        cv2.imshow('track', img)
-
-        k = cv2.waitKey(30) & 0xff
-        if k == 27:
-            exit()
-        if k == ord(' '):
-            break
-        if k == ord('a'):
-            if track_i > 0:
-                track_i = track_i - 1
-        if k == ord('d'):
-            if track_i < len(track_info) - 1:
-                track_i = track_i + 1
-
-    cv2.waitKey()
-
     # Reset Video
     cap.set(1, 0)
 
+    print("esc: stop program")
+    print("r: restart video")
+
     frame_count = 0
-    grid = 0
     while(1):
         ret, frame = cap.read()
 
@@ -625,7 +626,6 @@ if __name__ == '__main__':
 
         frame = cv2.warpPerspective(frame, H, (frame.shape[1], frame.shape[0]))
         mask = np.zeros_like(frame)
-        mask2 = np.zeros((512, 512, 3))
 
         # draw the tracks
         for i,track in enumerate(track_info):
@@ -643,72 +643,21 @@ if __name__ == '__main__':
                     cv = i % maxCorners
                     cv2.line(mask, (a,b), (c,d), color[cv].tolist(), 2)
 
-        grid_size = 5
-        vector_size = 20
-        for x in range(grid_size):
-            for y in range(grid_size):
-                p = Point(56+100*x,56+100*y)
-                i = grid_size*y + x + grid*grid_size*grid_size
-
-                if i >= len(track_info):
-                    break
-
-                track = track_info[i]
-
-                a = c = p.x
-                b = d = p.y
-
-                if track.startFrame <= frame_count and track.endFrame > frame_count:
-                    index = frame_count - track.startFrame
-
-                    if index < len(track.direction):
-                        d = track.direction[index]
-                        dx = vector_size*d.x
-                        dy = vector_size*d.y
-
-                        c = p.x + dx
-                        d = p.y + dy
-                
-                cv = int(i % maxCorners)
-                a = int(a)
-                b = int(b)
-                c = int(c)
-                d = int(d)
-                cv2.line(mask2, (a,b), (c,d), color[cv].tolist(), 2)
-
         img = cv2.add(np.uint8(0.5*frame), mask)
 
         cv2.imshow('frame', img)
-        cv2.imshow('direction', mask2)
 
+        # Handle Keyboard input
         k = cv2.waitKey(30) & 0xff
         if k == 27:
-            exit()
-        if k == ord(' '):
             break
-        if k == ord('a'):
-            if grid > 0:
-                grid = grid - 1
-        if k == ord('d'):
-            if grid*grid_size*grid_size < len(track_info):
-                grid = grid + 1
+        if k == ord('r'):
+            # Reset Video
+            frame_count = 0
+            cap.set(1, 0)
 
         frame_count = frame_count + 1
 
-    f = open(out_path, 'w')
-
-    for i,track in enumerate(track_info):
-        frames = track.getNumberOfFrames()
-        start = track.startFrame
-        f.write(str(start) + ' ' + str(frames) + '\n')
-
-    f.write('\n')
-
-    for i,track in enumerate(track_info):
-        frames = track.getNumberOfFrames()
-        for j in range(0,frames):
-            a,b = track.points[j].getCoords()
-            f.write(str(int(a)) + ' ' + str(int(b)) + '\n')
-
+    # Clean up
     cv2.destroyAllWindows()
     cap.release()
