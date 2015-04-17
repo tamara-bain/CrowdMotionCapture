@@ -503,8 +503,6 @@ if __name__ == '__main__':
 	#Load Cascades
 	full_body_cascade = cv2.CascadeClassifier(
 		'../Cascades/full_body_cascade.xml')
-	upper_body_cascade = cv2.CascadeClassifier(
-		'../Cascades/haarcascade_upperbody.xml')
 
 	 # Grab first frame
 	ret, prev = cap.read()
@@ -554,7 +552,6 @@ if __name__ == '__main__':
 			frame, 
 			casscade_scale, 
 			casscade_group_threshold)
-		#np.append(detected, upper_body_cascade.detectMultiScale(frame, 1.2, 5))
 
 		# Find detected areas that are not moving and remove them
 		if len(detected) > 0:
