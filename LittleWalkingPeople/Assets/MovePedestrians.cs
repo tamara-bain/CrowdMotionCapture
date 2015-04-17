@@ -18,7 +18,8 @@ public class MovePedestrians : MonoBehaviour {
 	private List<GameObject> people;
 	private List<MovePedestrians.TrackInfo> tracks;
 	private int currentFrame = 0; //Starting Frame
-
+	private int waiting = 0;
+	private int step = 1;
 	private bool loaded;
 
 	//initialize file browser
@@ -28,21 +29,19 @@ public class MovePedestrians : MonoBehaviour {
 	private Camera mainCam;
 
 	void Start() {
-		//Application.targetFrameRate = 10;
-
 		tracks = new List<MovePedestrians.TrackInfo>();
 		people = new List<GameObject>();
-
+		
 		loaded = false;
 
 		//Set up camera camera position
 		mainCam = Camera.main;
-		mainCam.transform.position = new Vector3 (30, 20, 0);
-		mainCam.transform.localEulerAngles = new Vector3 (40, 0, 0);
-		//mainCam.transform.position = new Vector3 (0, 20, 0);
-		//mainCam.transform.localEulerAngles = new Vector3 (90, 0, 0);
-		mainCam.transform.localScale = new Vector3 (1, 1, 1);
+		mainCam.transform.position = new Vector3 (29, 30, -60);
+		mainCam.transform.localEulerAngles = new Vector3 (38, 357, 2);
 		mainCam.fieldOfView = 30;
+
+		mainCam.transform.localScale = new Vector3 (1, 1, 1);
+
 	}	
 
 	void OnGUI(){
@@ -102,7 +101,6 @@ public class MovePedestrians : MonoBehaviour {
 				}
 			}
 		}
-
 		loaded = true;
 
 		// Restart player
@@ -124,28 +122,52 @@ public class MovePedestrians : MonoBehaviour {
 		}
 
 		int personNum = 0;
+
+		// Go through each track and get the corresponding frame
+		// if it exists
+
 		foreach (TrackInfo track in tracks) {
 			GameObject person = people[personNum] as GameObject;
 
 			if (track.startFrame < currentFrame && currentFrame < (track.startFrame + track.frameCount)) {
-				person.SetActive(true);
 
+				// access tack  position at current frame
 				int i = currentFrame - track.startFrame;
 				Vector2 point = track.points[i];
+
 				float x = point.x*scaling;
-				float y = point.y*scaling;
-				person.transform.position = new Vector3 (x, 0, y);
+				float y = point.y*scaling*-1;
+				Vector3 location = new Vector3(x, 0, y);
+
+				float distance = Vector3.Distance(person.transform.position, location);
+
+				// set up person as they first appear
+				if (!person.activeSelf) {
+					person.SetActive(true);
+					person.transform.LookAt (location);
+					person.transform.position = location;
+					continue;
+				}
+
+				// only change view direction for major shifts
+				if (distance > 0.1)  {
+					person.transform.LookAt (location);
+				}
+
+				person.transform.position = Vector3.MoveTowards(person.transform.position, location, 1 * Time.deltaTime);
 
 				//Debug.Log("Frame: " + currentFrame + " Person: " + personNum + " X: " + x + " Y: " + y);
 			} else {
 				person.SetActive(false);
+				person.GetComponent<Animation>().Stop ();
 			}
 
 			personNum++;
 		}
-
-		currentFrame++;
-
+		if (waiting%step == 0) {
+			currentFrame++;
+		}
+		waiting++;
 	}
 }
 
