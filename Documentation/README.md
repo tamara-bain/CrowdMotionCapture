@@ -90,13 +90,14 @@ to load. After you select the file the program will begin playing.
 
 You are able to move the camera around using the mouse and keyboard.
 
-Mouse: Look
-w: move forward
-s: move backward
-a: straf left
-d: straf right
-q: move up
-e: move down
+- **Mouse**: Look
+- **w**: move forward
+- **s**: move backward
+- **a**: straf left
+- **d**: straf right
+- **q**: move up
+- **e**: move down
 
-You can restart the animation at any time by pressing the space bar. If you wish to 
-quit the application simply press the escape key.
+
+You can restart the animation at any time by pressing the space bar. If you 
+wish to quit the application simply press the escape key.
