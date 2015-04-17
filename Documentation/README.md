@@ -79,12 +79,24 @@ There is also a 3D player that takes outputed tracks from either
 CrowdTracking.py or OBJCrowdTracking.py and displays the recorded data in a 
 3D enviroment.
 
-The two versions of the program are:
-
-
 LittleWalkingPeople.exe
 
-LittleWalkingPeople_FixedCamera.exe
+Note this program was ran and tested on Windows 7 with Unity 5 installed.
 
+#### Instructions
 
-Note these programs were ran and tested on Windows 7 with Unity 5 installed.
+When running LittleWalkingPeople.exe you will first be asked what file you wish 
+to load. After you select the file the program will begin playing.
+
+You are able to move the camera around using the mouse and keyboard.
+
+Mouse: Look
+w: move forward
+s: move backward
+a: straf left
+d: straf right
+q: move up
+e: move down
+
+You can restart the animation at any time by pressing the space bar. If you wish to 
+quit the application simply press the escape key.
