@@ -6,11 +6,12 @@ Benjamin Lavin
 Maciej Ogrocki  
 Tamara Bain  
 
-### Links:  
-http://docs.opencv.org/trunk/doc/py_tutorials/py_video/py_lucas_kanade/py_lucas_kanade.html  
+### Project Demo:  
+https://docs.google.com/presentation/d/1pJk0lb_w7gJ8yLnAv1IFozmT4Yy0TUhdvnbuEys2UCk/edit?usp=sharing
 
-### Data:
+### Data Sets:
 http://server.cs.ucf.edu/~vision/projects/sali/CrowdSegmentation/UCF_CrowdsDataset.zip
+http://pascal.inrialpes.fr/data/human/
 
 
 ### Week 1: March 2-6  
