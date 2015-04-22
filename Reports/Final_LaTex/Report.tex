@@ -1,6 +1,9 @@
 \documentclass[conference]{IEEEtran}
 
-\usepackage{algorithmic}
+\usepackage[]{algorithm2e}
+\usepackage[pdftex]{graphicx}
+
+\graphicspath{{../../Images/}}
 
 \begin{document}
  
@@ -47,17 +50,89 @@
 
 \subsection{Density}
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{noImage.jpg}
+\caption{Results of the density algorithm. Green for areas with low density, yellow for areas of medium density, and red for areas of high density.}
+\label{Density}
+\end{figure}
+
+\begin{algorithm}
+\DontPrintSemicolon
+ $I_{t} \leftarrow | Im[x, y, t+1] + Im[x, y, t+1] | $\;
+ $I_{threshold} \leftarrow I_{t} > threshold$\;
+ $blocks_{width} = Im_{width}/block_{size}$\;
+ $blocks_{height} = Im_{height}/block_{size}$\;
+ \For{i := 0; i $< blocks_{width}$; i++}{
+  \For{j := 0; j $< blocks_{height}$; j++}{
+   $density[i, j] \leftarrow I_{density}[i, j]  - $ decay rate\;
+   \If{$density[i, j] < 0$} {
+    $density[i, j] \leftarrow 0$\;
+   }
+   $x1 \leftarrow i(block_{size})$\;
+   $x2 \leftarrow i(block_{size}) + block_{size}$\;
+   $y1 \leftarrow j(block_{size})$\;
+   $y2 \leftarrow j(block_{size}) + block_{size}$\;
+   $block \leftarrow I_{threshold}[x1:x2, y1:y2]$\;
+   $density[i, j] \leftarrow density[i, j] + \alpha\sum_{x}^{N} \sum_{y}^{N} block [x, y]$\;
+   \If{$density[i, j] > 1$} {
+    $density[i, j] \leftarrow 1$\;
+   }
+  }
+ }
+\caption{Density Calculation}
+\end{algorithm}
+
 \subsection{Optic Flow}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{noImage.jpg}
+\caption{Results of the Optic Flow algorithm. Small lines point in the direction in which the pixels are found to be moving. In this image you can see that the hand is moving very slightly from left to right.}
+\label{Optic_Flow}
+\end{figure}
 
 \subsection{Tracking With Lucas Kanade}
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{noImage.jpg}
+\caption{Results of the Lucas-Kanade tracking algorithm. Different tracks are shown on the video of where individuals in the crowd are found and thought to have come from.}
+\label{Lucas_Kanade}
+\end{figure}
+
 \subsection{Object Detection}
 
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{noImage.jpg}
+\caption{Results of our trained Haar Cascade that is detecting people.}
+\label{Object_Detection}
+\end{figure}
+
 \subsection{Tracking with Object Detection}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{noImage.jpg}
+\caption{Results of the tracking algorithm that utilizes the Object Detection.}
+\label{Tracking_Object_Detection}
+\end{figure}
 
 \subsection{Output}
 
 \subsection{Unity}
+
+\begin{figure}[!t]
+\centering
+\includegraphics[width=2.5in]{noImage.jpg}
+\caption{Results of the Unity crowd playback data outputted from the tracking algorithms.}
+\label{Unity}
+\end{figure}
+
+\section{Results}
+
+\section{Discussion}
 
 \begin{thebibliography}{1}
 
