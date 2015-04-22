@@ -2,6 +2,29 @@
 
 \usepackage[]{algorithm2e}
 \usepackage[pdftex]{graphicx}
+\usepackage{listings}
+\usepackage{color}
+
+\definecolor{dkgreen}{rgb}{0,0.4,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Python,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
 
 \graphicspath{{../../Images/}}
 
@@ -46,6 +69,8 @@
 
 \subsection{Multi Camera Tracking}
 
+\section{Combining Micro and Macro Crowd Capture}
+
 \section{Implementation}
 
 \subsection{Density}
@@ -57,15 +82,19 @@
 \label{Density}
 \end{figure}
 
+One crowd parameter that was useful in other areas of the project was crowd density. In order to calculate the density of a crowd we need to first make some assumptions. The first is that the people in the crowd are all moving roughly the same speed. We also assume that the size of a person stays roughly the same as they move through the scene. Finally we assume that the more an area in the scene is changing the more people are in that area.
+
+With these assumptions we are able to calculate the density of a crowd by calculating the temporal difference. To calculate the temporal difference we simply take the current frame and subtract it from the previous frame. We then take the difference and create a threshold image. We found that a change in magnitude greater than 20 was significant enough to warrant valid change. Usually you don’t want to include all changes in your threshold image since then the threshold would include noise from the camera. Next we divide the scene into smaller blocks. For scenes like the ones shown in Fig. \ref{Density} we found block sizes of 8 by 8 worked well. Next we iterate over the blocks and calculate the percentage of change. We then add the percent of change times some growth rate to the density map. Also it is important to decrease the density of the blocks over time.
+
 \begin{algorithm}
 \DontPrintSemicolon
- $I_{t} \leftarrow | Im[x, y, t+1] + Im[x, y, t+1] | $\;
+ $I_{t} \leftarrow | Im[x, y, t+1] + Im[x, y, t] | $\;
  $I_{threshold} \leftarrow I_{t} > threshold$\;
- $blocks_{width} = Im_{width}/block_{size}$\;
- $blocks_{height} = Im_{height}/block_{size}$\;
- \For{i := 0; i $< blocks_{width}$; i++}{
-  \For{j := 0; j $< blocks_{height}$; j++}{
-   $density[i, j] \leftarrow I_{density}[i, j]  - $ decay rate\;
+ $blocks_{x} = Im_{width}/block_{size}$\;
+ $blocks_{y} = Im_{height}/block_{size}$\;
+ \For{i := 0; i $< blocks_{x}$; i++}{
+  \For{j := 0; j $< blocks_{y}$; j++}{
+   $density[i, j] \leftarrow I_{density}[i, j]  - decay \  rate$\;
    \If{$density[i, j] < 0$} {
     $density[i, j] \leftarrow 0$\;
    }
@@ -85,6 +114,14 @@
 
 \subsection{Optic Flow}
 
+Optic Flow was used in other papers to calculate the flow of the crowd [1][2][5]. Most of these papers used the calculated flow information in a simulator. However, since we did not have a simulator the flow information of the crowd was not as useful to us. That being said we still were easily able to calculate the flow of the crowd using OpenCV’s built-in Optic Flow function.
+
+\begin{lstlisting}
+flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 20, 3, 5, 1.2, 0)
+\end{lstlisting}
+
+There are a few issues with using Optic Flow to calculate the flow of the crowd. The first is that when two object are moving against each other they will cancel out the flow of both objects. Secondarily flow is not calculated equally over all objects in the crowd. Larger objects will have a greater in pack on the flow of the crowd as they will take up more space and appear as multiple pedestrians. As such videos that contain large non-pedestrian objects such as cars will be less accurate.
+
 \begin{figure}[!t]
 \centering
 \includegraphics[width=2.5in]{noImage.jpg}
@@ -92,14 +129,67 @@
 \label{Optic_Flow}
 \end{figure}
 
-\subsection{Tracking With Lucas Kanade}
+\subsection{Tracking With Lucas-Kanade}
 
-\begin{figure}[!t]
+In order to track people in a crowd we used Lucas-Kanade to track feature points. To start the algorithm we first search through the first frame in the video feed to find feature points. These feature points are areas in the image where corners are found. More specifically we used Shi-Tomasi corner detection. After we have our points we create a new track for each point.
+
+We then start the main loop of the tracking algorithm. The loop starts by grabbing the next frame in the video feed and then trying to find the new locations of the feature points by using Optic Flow.
+
+\begin{lstlisting}
+# The variable ‘p0’ is the original location of the points and ‘p1’ is the new location
+p1, st, err = cv2.calcOpticalFlowPyrLK(prevgray, gray, p0, None, **lk_params)
+\end{lstlisting}
+
+Since people can move in and out of the frame we added a section of code that would add new feature points to the scene. This works by first calculating areas of change between the current frame and the previous frame. Next we search for new feature points in these areas of change. Finally we add the new feature point to our tracking points if that new feature point does not have a similar corresponding tracking point. These are points in relatively the same location.
+
+We also try to remove points from the list of feature points, p1, that are no longer needed. The points that are removed are points that no longer move or stand still for an extended period of time. The main issue with removing points that remain still for an extended period of time is that we can easily remove points that belong to a person that has briefly stopped moving and will continue moving shortly. So for this algorithm to work we need to assume that people are not stopping.
+
+After we have our updated list of feature points, p1, we need to add the points to their corresponding track. This posed some initial difficulties since the size of p1 is constantly changing and the indexed points don’t always correspond to the same indexed track. What we mean by this is that the point in p1 at index i does not always belong to the track at index i. To keep track of all the changing information we created four arrays.
+
+\begin{enumerate}
+\item p1: An array of all the active points. These are the points currently being tracked by Lucas-Kanade.
+\item st: An array of which points in p1 are no longer active and were removed from p1 during this last iteration. It is a bit array where 1 means that the point is still active and 0 means that the point was deleted.
+\item tracks: A 2D array storing the path that each point tracks. It is an m x n array where m is the number of frames and n is the number of points.
+\item tracks\_index: Since p1 and tracks don’t match in size or indexing, we need tracks\_index to keep a map between p1 and tracks.
+\end{enumerate}
+
+The tracks\_index array is updated by first initializing an array with values 0 to n-1, where n is the number of points in p1. Each iteration we obtain a list of the points which were deleted from p1, st. We then iterate over st and, if a point is removed, we set the value in tracks\_index corresponding to the index in st to -1, and subtract one from all the remaining values in tracks\_index.
+
+\begin{table}[!t]
+\caption{A simple example of how track\_index is updated}
+\label{table_index}
 \centering
-\includegraphics[width=2.5in]{noImage.jpg}
-\caption{Results of the Lucas-Kanade tracking algorithm. Different tracks are shown on the video of where individuals in the crowd are found and thought to have come from.}
-\label{Lucas_Kanade}
-\end{figure}
+\begin{tabular}{ | l | c | r | }
+ \hline
+ Array & Values\\
+  \hline\hline                    
+  $st$ & $[1, 1, 1, 0, 1, 1]$\\
+  \hline
+  $tracks\_index\ before\ update$ & $[0, 1, 2, 3, 4, 5]$ \\
+  \hline
+  $tracks\_index\ after\ update$ & $[0, 1, 2, -1, 3, 4]$ \\
+  \hline  
+\end{tabular}
+\end{table}
+
+After this step, if p1 has more points than the max value in tracks\_index, it means that an additional point was added. In this case we append the max value plus one to the end of tracks\_index.
+
+\begin{table}[!t]
+\caption{A simple example of how elements are added to track\_index}
+\label{table_index_add}
+\centering
+\begin{tabular}{ | l | c | r | }
+ \hline
+ Array & Values\\
+  \hline\hline                     
+  $tracks\_index\ before\ update$ & $[0, 1, 2, -1, 3, 4]$ \\
+  \hline
+  $tracks\_index\ after\ update$ & $[0, 1, 2, -1, 3, 4, 5]$ \\
+  \hline  
+\end{tabular}
+\end{table}
+
+Finally, we go through p1 and find the corresponding index in tracks\_index. We then add the point in p1 to the correct path in tracks, given the found index in tracks\_index.
 
 \subsection{Object Detection}
 

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.4.22)  22 APR 2015 12:35
+This is pdfTeX, Version 3.14159265-2.6-1.40.15 (TeX Live 2014/W32TeX) (preloaded format=pdflatex 2015.4.22)  22 APR 2015 14:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -196,35 +196,72 @@ Package: ltxcmds 2011/11/09 v1.22 LaTeX kernel commands for general use (HO)
 ))
 \Gin@req@height=\dimen131
 \Gin@req@width=\dimen132
+)
+(c:/texlive/2014/texmf-dist/tex/latex/listings/listings.sty
+\lst@mode=\count99
+\lst@gtempboxa=\box36
+\lst@token=\toks16
+\lst@length=\count100
+\lst@currlwidth=\dimen133
+\lst@column=\count101
+\lst@pos=\count102
+\lst@lostspace=\dimen134
+\lst@width=\dimen135
+\lst@newlines=\count103
+\lst@lineno=\count104
+\lst@maxwidth=\dimen136
+
+(c:/texlive/2014/texmf-dist/tex/latex/listings/lstmisc.sty
+File: lstmisc.sty 2014/09/06 1.5e (Carsten Heinz)
+\c@lstnumber=\count105
+\lst@skipnumbers=\count106
+\lst@framebox=\box37
+)
+(c:/texlive/2014/texmf-dist/tex/latex/listings/listings.cfg
+File: listings.cfg 2014/09/06 1.5e listings configuration
+))
+Package: listings 2014/09/06 1.5e (Carsten Heinz)
+
+(c:/texlive/2014/texmf-dist/tex/latex/graphics/color.sty
+Package: color 2014/10/28 v1.1a Standard LaTeX Color (DPC)
+
+(c:/texlive/2014/texmf-dist/tex/latex/latexconfig/color.cfg
+File: color.cfg 2007/01/18 v1.5 color configuration of teTeX/TeXLive
+)
+Package color Info: Driver file: pdftex.def on input line 137.
+)
+(c:/texlive/2014/texmf-dist/tex/latex/listings/lstlang1.sty
+File: lstlang1.sty 2014/09/06 1.5e listings language file
 ) (./Report.aux)
 \openout1 = `Report.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+
 -- Lines per column: 56 (exact).
 (c:/texlive/2014/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count99
-\scratchdimen=\dimen133
-\scratchbox=\box36
-\nofMPsegments=\count100
-\nofMParguments=\count101
-\everyMPshowfont=\toks16
-\MPscratchCnt=\count102
-\MPscratchDim=\dimen134
-\MPnumerator=\count103
-\makeMPintoPDFobject=\count104
-\everyMPtoPDFconversion=\toks17
+\scratchcounter=\count107
+\scratchdimen=\dimen137
+\scratchbox=\box38
+\nofMPsegments=\count108
+\nofMParguments=\count109
+\everyMPshowfont=\toks17
+\MPscratchCnt=\count110
+\MPscratchDim=\dimen138
+\MPnumerator=\count111
+\makeMPintoPDFobject=\count112
+\everyMPtoPDFconversion=\toks18
 ) (c:/texlive/2014/texmf-dist/tex/generic/oberdiek/pdftexcmds.sty
 Package: pdftexcmds 2011/11/29 v0.20 Utility functions of pdfTeX for LuaTeX (HO
 )
@@ -273,42 +310,77 @@ G,.JBIG2,.JB2,.eps]
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
+\c@lstlisting=\count113
+
 <../../Images/noImage.jpg, id=1, 401.5pt x 301.125pt>
 File: ../../Images/noImage.jpg Graphic file (type jpg)
 
 <use ../../Images/noImage.jpg>
-Package pdftex.def Info: ../../Images/noImage.jpg used on input line 55.
+Package pdftex.def Info: ../../Images/noImage.jpg used on input line 80.
 (pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no ™ in font ptmr7t!
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <7> on input line 62.
+(Font)              <7> on input line 91.
 LaTeX Font Info:    External font `cmex10' loaded for size
-(Font)              <5> on input line 62.
-File: ../../Images/noImage.jpg Graphic file (type jpg)
- <use ../../Images/noImage.jpg>
-Package pdftex.def Info: ../../Images/noImage.jpg used on input line 90.
-(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
-File: ../../Images/noImage.jpg Graphic file (type jpg)
+(Font)              <5> on input line 91.
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no ™ in font ptmr7t!
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 119.
 
-<use ../../Images/noImage.jpg>
-Package pdftex.def Info: ../../Images/noImage.jpg used on input line 99.
-(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
-File: ../../Images/noImage.jpg Graphic file (type jpg)
- <use ../../Images/noImage.jpg>
-Package pdftex.def Info: ../../Images/noImage.jpg used on input line 108.
-(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
-File: ../../Images/noImage.jpg Graphic file (type jpg)
 
-<use ../../Images/noImage.jpg>
-Package pdftex.def Info: ../../Images/noImage.jpg used on input line 117.
-(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
-File: ../../Images/noImage.jpg Graphic file (type jpg)
- <use ../../Images/noImage.jpg>
-Package pdftex.def Info: ../../Images/noImage.jpg used on input line 128.
-(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
- [1{c:/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
+(c:/texlive/2014/texmf-dist/tex/latex/psnfss/ot1pcr.fd
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+) [1{c:/texlive/2014/texmf-var/fonts/map/pdftex/updmap/pdftex.map}
 
 
  <../../Images/noImage.jpg>]
+File: ../../Images/noImage.jpg Graphic file (type jpg)
+
+<use ../../Images/noImage.jpg>
+Package pdftex.def Info: ../../Images/noImage.jpg used on input line 127.
+(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
+Missing character: There is no â in font pcrr7t!
+Missing character: There is no € in font pcrr7t!
+Missing character: There is no ˜ in font pcrr7t!
+Missing character: There is no â in font pcrr7t!
+Missing character: There is no € in font pcrr7t!
+Missing character: There is no ™ in font pcrr7t!
+Missing character: There is no â in font pcrr7t!
+Missing character: There is no € in font pcrr7t!
+Missing character: There is no ˜ in font pcrr7t!
+Missing character: There is no â in font pcrr7t!
+Missing character: There is no € in font pcrr7t!
+Missing character: There is no ™ in font pcrr7t!
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no ™ in font ptmr7t!
+Missing character: There is no â in font ptmr7t!
+Missing character: There is no € in font ptmr7t!
+Missing character: There is no ™ in font ptmr7t!
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <8> on input line 162.
+LaTeX Font Info:    External font `cmex10' loaded for size
+(Font)              <6> on input line 162.
+File: ../../Images/noImage.jpg Graphic file (type jpg)
+ <use ../../Images/noImage.jpg>
+Package pdftex.def Info: ../../Images/noImage.jpg used on input line 198.
+(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
+File: ../../Images/noImage.jpg Graphic file (type jpg)
+
+<use ../../Images/noImage.jpg>
+Package pdftex.def Info: ../../Images/noImage.jpg used on input line 207.
+(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
+File: ../../Images/noImage.jpg Graphic file (type jpg)
+ <use ../../Images/noImage.jpg>
+Package pdftex.def Info: ../../Images/noImage.jpg used on input line 218.
+(pdftex.def)             Requested size: 180.67499pt x 135.50958pt.
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
+
+ [2]
 Missing character: There is no Ã in font ptmr7t!
 Missing character: There is no © in font ptmr7t!
 Missing character: There is no â in font ptmri7t!
@@ -346,27 +418,31 @@ Before submitting the final camera ready copy, remember to:
  uses only Type 1 fonts and that every step in the generation
  process uses the appropriate paper size.
 
-[2] (./Report.aux) ) 
+[3] (./Report.aux) ) 
 Here is how much of TeX's memory you used:
- 3709 strings out of 493109
- 57230 string characters out of 6138581
- 148085 words of memory out of 5000000
- 7167 multiletter control sequences out of 15000+600000
- 33047 words of font info for 62 fonts, out of 8000000 for 9000
+ 5189 strings out of 493109
+ 78329 string characters out of 6138581
+ 196167 words of memory out of 5000000
+ 8615 multiletter control sequences out of 15000+600000
+ 37109 words of font info for 72 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 37i,15n,23p,320b,347s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 38i,16n,40p,908b,1056s stack positions out of 5000i,500n,10000p,200000b,80000s
 {c:/texlive/2014/texmf-dist/fonts/enc/dvips/base/8r.enc}<c:
 /texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><c:/texlive/
 2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><c:/texlive/2014/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb><c:/texlive/2014/texmf-dist/fon
-ts/type1/public/amsfonts/cm/cmr10.pfb><c:/texlive/2014/texmf-dist/fonts/type1/p
-ublic/amsfonts/cm/cmsy10.pfb><c:/texlive/2014/texmf-dist/fonts/type1/urw/times/
-utmb8a.pfb><c:/texlive/2014/texmf-dist/fonts/type1/urw/times/utmr8a.pfb><c:/tex
-live/2014/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on Report.pdf (2 pages, 100905 bytes).
+ts/type1/public/amsfonts/cm/cmmi8.pfb><c:/texlive/2014/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr10.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmr8.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cms
+y10.pfb><c:/texlive/2014/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><c
+:/texlive/2014/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb><c:/texlive/2014/t
+exmf-dist/fonts/type1/urw/times/utmb8a.pfb><c:/texlive/2014/texmf-dist/fonts/ty
+pe1/urw/times/utmr8a.pfb><c:/texlive/2014/texmf-dist/fonts/type1/urw/times/utmr
+i8a.pfb>
+Output written on Report.pdf (3 pages, 146495 bytes).
 PDF statistics:
- 45 PDF objects out of 1000 (max. 8388607)
- 31 compressed objects within 1 object stream
+ 64 PDF objects out of 1000 (max. 8388607)
+ 45 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
  6 words of extra memory for PDF output out of 10000 (max. 10000000)
 
