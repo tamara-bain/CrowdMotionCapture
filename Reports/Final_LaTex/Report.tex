@@ -1,6 +1,7 @@
-\documentclass[12pt, conference]{IEEEtran}
+\documentclass[conference]{IEEEtran}
 
 \usepackage[]{algorithm2e}
+\usepackage{amsmath}
 \usepackage[pdftex]{graphicx}
 \usepackage{listings}
 \usepackage{color}
@@ -176,6 +177,33 @@ There are a few issues with using Optic Flow to calculate the flow of the crowd.
 
 \subsection{Affine and Metric Rectification}
 
+Following the solution proposed in section 2.7 of Hartley and Zisserman book, Multiple View Geometry, we were able to implement a two pass Metric Rectification algorithm. The first step is the user selects two pairs of parallel lines. Using theses lines we are able to apply an affine rectification using the following equations.
+
+\begin{equation}
+v_1 = m \times m'
+\end{equation}
+
+\begin{equation}
+v_2 = n \times n'
+\end{equation}
+
+\begin{equation}
+l = v_1 \times v_2
+\end{equation}
+
+\begin{equation}
+H =
+\begin{bmatrix}
+1 & 0 & 0\\ 
+0 & 1 & 0\\ 
+l_1 & l_2 & l_3 
+\end{bmatrix}
+\end{equation}
+
+Where m and m` are one set of parallel lines and n  and n` are the other set of parallel lines.
+
+Next we have the user select two pairs of orthogonal lines in the affine rectified image. Using the orthogonal lines we are able to retrieve a metric rectified image from the affine. Finally we allow the user to scale, rotate, and translate the results to allow them to get a better viewing experience. When the user is happy with the results they can output the matrix to the screen allowing them to use the homography matrix in the tracking algorithms described below.
+
 \subsection{Tracking With Lucas-Kanade}
 
 One technique used to track people in a crowd was an implementation of Lucas-Kanade that tracked feature points. We begin by searching through the first frame in the video feed to find feature points. These feature points are areas in the image where corners are found. More specifically we used Shi-Tomasi corner detection. After we have our points we create a new track for each point.
@@ -242,10 +270,12 @@ After we have finished recording all the tracks we do a couple passes to clean u
 
 \subsection{Object Detection}
 
+To accurately track a person we need to be able to identify what objects in our scene are people.
+
 \begin{figure}[!t]
 \centering
 \includegraphics[width=2.5in]{noImage.jpg}
-\caption{Results of our trained Haar Cascade that is detecting people.}
+\caption{Results of our trained Haar Cascade that is detecting people. Video captured from the University of Alberta LRT station.}
 \label{Object_Detection}
 \end{figure}
 
@@ -259,6 +289,29 @@ After we have finished recording all the tracks we do a couple passes to clean u
 \end{figure}
 
 \subsection{Output}
+
+Using the information that we gathered from the above tracking methods we are able to create a output file with the track information. This output file is formatted into two sections.
+
+The first section lists pairs of integers, with each pair representing a single track. The first integer states the starting frame (the frame in which the track first appears), and the second integer provides the number of frames for which the track appears. 
+
+The second section of the output file contains pairs of floats representing X and Z coordinates in a 3D environment. The pairs are listed in the same order that their respective tracks appear in the first section, and contain the coordinates for each frame of the tracks. An example output file is shown below:
+
+\begin{figure}
+\begin{gather*}
+0\ 220 \\
+0\ 244 \\
+...  \\
+233\ 12 \\
+236\ 9   \\
+ \\
+379\ 252 \\
+377\ 251 \\
+...  \\
+348\ 147 \\
+356\ 146 \\
+\end{gather*}
+\caption{Example output file. It shows that track 1 first appears at frame 0 and goes for 220 frames. Then track 2 appears at frame 0 as well but goes for 244 frames. After the new line in the middle of the file is where the coordinates begin. The first frame in track 1 is at position (379, 252) and the second frame is at (377, 251).}
+\end{figure}
 
 \subsection{Unity}
 
