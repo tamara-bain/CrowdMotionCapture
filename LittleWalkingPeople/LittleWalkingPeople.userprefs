@@ -2,7 +2,8 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\MovePedestrians.cs">
     <Files>
-      <File FileName="Assets\MovePedestrians.cs" Line="28" Column="25" />
+      <File FileName="Assets\MovePedestrians.cs" Line="165" Column="16" />
+      <File FileName="Assets\ExtendedFlycam.cs" Line="50" Column="27" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
