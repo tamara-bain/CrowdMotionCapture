@@ -1,4 +1,5 @@
-\documentclass[conference]{IEEEtran}
+%\documentclass[12pt, onecolumn, conference]{IEEEtran}
+\documentclass[12pt, twocolumn, conference]{IEEEtran}
 
 \usepackage[]{algorithm2e}
 \usepackage{amsmath}
@@ -128,7 +129,7 @@ Several studies combine macro and crowd capture to refine their results. Rodrigu
 \label{Density}
 \end{figure}
 
-One crowd parameter that was useful in other areas of the project was crowd density. In order to calculate the density of a crowd we need to first make some assumptions. The first is that the people in the crowd are all moving roughly the same speed. We also assume that the size of a person stays roughly the same as they move through the scene. Finally we assume that the more an area in the scene is changing the more people are in that area.
+One parameter of the crowd that was useful in other areas of the project was crowd density. In order to calculate the density of a crowd we need to make some assumptions. The first is that the people in the crowd are all moving roughly the same speed. Next we have to assume that the size of a person stays roughly the same as they move through the scene. Finally we assume that the more an area in the scene is changing the more people are in that area.
 
 With these assumptions we are able to calculate the density of a crowd by calculating the temporal difference. To calculate the temporal difference we simply take the current frame and subtract it from the previous frame. We then take the difference and create a threshold image. We found that a change in magnitude greater than 20 was significant enough to warrant valid change. Usually you don’t want to include all changes in your threshold image since then the threshold would include noise from the camera. Next we divide the scene into smaller blocks. For scenes like the ones shown in Fig. \ref{Density} we found block sizes of 8 by 8 worked well. Next we iterate over the blocks and calculate the percentage of change. We then add the percent of change times some growth rate to the density map. Also it is important to decrease the density of the blocks over time.
 
@@ -177,7 +178,9 @@ There are a few issues with using Optic Flow to calculate the flow of the crowd.
 
 \subsection{Affine and Metric Rectification}
 
-Following the solution proposed in section 2.7 of Hartley and Zisserman book, Multiple View Geometry, we were able to implement a two pass Metric Rectification algorithm. The first step is the user selects two pairs of parallel lines. Using theses lines we are able to apply an affine rectification using the following equations.
+Most video feeds are not placed above scene and angled orthogonal to the ground plane. In other words the video feed is not always at a perfect birds eye view of the scene. Because of this the information calculated is skewed with distance. The farther away an object is from the camera the less an object will appear to move. To better understand take an image of a meter stick from close up and then from far away. You will notice that the meter sticks is smaller in the image taken from far away. 
+
+We can attempt to remove the projective distortion and fake a top-down view of the scene by applying a metric rectification. Following the solution proposed in section 2.7 of Hartley and Zisserman book, Multiple View Geometry, we were able to implement a two pass metric rectification algorithm. The first step is the user selects two pairs of parallel lines. Using theses lines we are able to apply an affine rectification using the following equations.
 
 \begin{equation}
 v_1 = m \times m'
@@ -208,18 +211,18 @@ Next we have the user select two pairs of orthogonal lines in the affine rectifi
 
 One technique used to track people in a crowd was an implementation of Lucas-Kanade that tracked feature points. We begin by searching through the first frame in the video feed to find feature points. These feature points are areas in the image where corners are found. More specifically we used Shi-Tomasi corner detection. After we have our points we create a new track for each point.
 
-We then start the main loop of the tracking algorithm. The loop starts by grabbing the next frame in the video feed and then trying to find the new locations of the feature points by using Optic Flow.
+We then start the main loop of the tracking algorithm. The loop starts by grabbing the next frame in the video feed and then trying to find the new locations of the feature points with help from Optic Flow. OpenCV has a nice built in function that takes the points from the previous frame, p0, and tries to calculate the points current location, p1.
 
 \begin{lstlisting}
 # The variable ‘p0’ is the original location of the points and ‘p1’ is the new location
 p1, st, err = cv2.calcOpticalFlowPyrLK(prevgray, gray, p0, None, **lk_params)
 \end{lstlisting}
 
-Since people can move in and out of the frame we added a section of code that would add new feature points to the scene. This works by first calculating areas of change between the current frame and the previous frame. Next we search for new feature points in these areas of change. Finally we add the new feature point to our tracking points if that new feature point does not have a similar corresponding tracking point. These are points in relatively the same location.
+Since people can move in and out of the frame we added a section of code that would add new feature points to the scene. This works by first finding areas of change between the current frame and the previous frame. Next we search for new feature points in these areas of change. Finally we add the new feature point to our tracking points if that new feature point does not have a similar corresponding tracking point. These are points in relatively the same location.
 
 We also try to remove points from the list of feature points, p1, that are no longer valid. The points that are removed are points that no longer move or move an unrealistic amount. The main issue with removing points that remain still for an extended period of time is that we can easily remove points that belong to a person that has briefly stopped moving and will continue moving. Because of this we need to assume that people are not stopping for this algorithm to work correctly.
 
-After we have our updated list of feature points, p1, we need to add the points to their corresponding track. This posed some initial difficulties since the size of p1 is constantly changing and the indexed points don’t always correspond to the same indexed track. What we mean by this is that the point in p1 at index i does not always belong to the track at index i. To keep track of all the changing information we created four arrays.
+After we have our updated list of feature points, p1, we need to add the points to their corresponding track. This posed some initial difficulties since the size of p1 is constantly changing and the indexed points don’t always correspond to the same indexed track. In order to keep track of all the changing information we have four arrays.
 
 \begin{enumerate}
 \item p1: An array of all the active points. These are the points currently being tracked by Lucas-Kanade.
@@ -228,7 +231,7 @@ After we have our updated list of feature points, p1, we need to add the points 
 \item tracks\_index: Since p1 and tracks don’t match in size or indexing, we need tracks\_index to keep a map between p1 and tracks.
 \end{enumerate}
 
-The tracks\_index array is updated by first initializing an array with values 0 to n-1, where n is the number of points in p1. Each iteration we obtain a list of the points which were deleted from p1, st. We then iterate over st and, if a point is removed, we set the value in tracks\_index corresponding to the index in st to -1, and subtract one from all the remaining values in tracks\_index.
+The tracks\_index array is first initialized with values 0 to n-1, where n is the number of points in p1. Each iteration we obtain a list of the points which were deleted from p1, st. We then iterate over st and, if a point is removed, we set the value in tracks\_index corresponding to the index in st to -1, and subtract one from all the remaining values in tracks\_index. This can be seen in Table \ref{table_index}.
 
 \begin{table}[!t]
 \caption{A simple example of how track\_index is updated}
@@ -247,7 +250,7 @@ The tracks\_index array is updated by first initializing an array with values 0 
 \end{tabular}
 \end{table}
 
-After this step, if p1 has more points than the max value in tracks\_index, it means that an additional point was added. In this case we append the max value plus one to the end of tracks\_index.
+After this step, if p1 has more points than the max value in tracks\_index, it means that an additional point was added. In this case we append the max value plus one to the end of tracks\_index. This can be seen in Table \ref{table_index_add}.
 
 \begin{table}[!t]
 \caption{A simple example of how elements are added to track\_index}
@@ -264,7 +267,7 @@ After this step, if p1 has more points than the max value in tracks\_index, it m
 \end{tabular}
 \end{table}
 
-Finally, we go through p1 and find the corresponding index in tracks\_index. We then add the point in p1 to the correct path in tracks, given the found index in tracks\_index.
+Finally we go through p1 and find where the index of the current point in p1 is located in tracks\_index. Given the where the point in p1 was found in tracks\_index we then add the point in p1 to the correct path in tracks.
 
 After we have finished recording all the tracks we do a couple passes to clean up the data before we output it to a file. For example we delete tracks that we deem to short and were probably just some random blip. We also remove tracks that don’t seem to follow a consistent path.
 
@@ -280,6 +283,12 @@ To accurately track a person we need to be able to identify what objects in our 
 \end{figure}
 
 \subsection{Tracking with Object Detection}
+
+We were able to implement a tracking algorithm that utilizes the object detection described above. For each frame in the video we first run the object detection over the scene to find possible people to track. The object detection on its own gives us some false positives. In order to remove some of these false positives we combined the object detection with our density calculation. Now if a detected object is in an area of low density it is removed as there is most likely no one there. The main issue with this approach is we miss people who are standing still for an extended period of time. That being said we can still handle the case when a person just briefly stops.
+
+After we have our detected objects we try to find where these objects were in the last frame. For each detected object we compare the distance between the current object and the objects detected in the previous frame. If the distance is over a threshold we deem that the two detected objects do not belong to the same person. In the case when multiple objects from the current frame are possible matches to the same object in the previous frame we simply pick the pair with the smallest distance.
+
+We also store the path these objects take which we refer to as a track. After we have matched all the detected objects with the objects in the previous frame we add the new location to the objects corresponding track. If an object does not have a match then we deem it a new object and create a new track. However, if a track has no new objects added to it in the last n frames, where n is some number that the user decides is appropriate for the video, then the track is ended and the track can no longer be updated with new object locations. If a track is ended and is less than some threshold of frames then we remove the track as it is deemed a blip.
 
 \begin{figure}[!t]
 \centering
@@ -314,6 +323,12 @@ The second section of the output file contains pairs of floats representing X an
 \end{figure}
 
 \subsection{Unity}
+
+Using the Unity 5 engine, we are able to take our generated output file and and input its contents to a C\# script to simulate the track movements. Generic red-colored human models are used to represent each track of motion and are given a walking animation in order to simulate the crowd. In this revision of the script, the models are not programmed with any collision detection  logic to prevent them from walking thru one another if their respective coordinated overlap for a given frame as specified in the output file. The default background that the models are shown to walk on is a simple white plane. If users have access to a model (or wish to construct one) of the environment in which the original video footage was captured, it would be possible to have the human models simulate their movement within that environment model in order to achieve a result much visually similar to the original footage.
+
+The logic for creating and moving around the models in the crowd is found in the MovePedestrians.cs script. The script loads a generated output file as input in which the user selects and parses through the data. All track information is stored in a struct that contains the start frame, duration, and array of positions. In each update we look at all tracks and draw a person at the tracks current position. If the track does not have a frame corresponding to the current frame of simulation then the person that represents the track is hidden from the user. 
+
+As the simulation runs, it is possible for the user to navigate around the scene in 3D space using the keyboard. This offers enormous benefit in that the previously 2D scene shown on the initial video footage can now be seen from an infinite number of angles, allowing the user to better analyze the environment and how the crowd moves throughout. 
 
 \begin{figure}[!t]
 \centering
