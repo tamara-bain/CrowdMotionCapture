@@ -3,3 +3,8 @@ src/__pycache__/
 *.pyc
 *~
 Output/Video/
+Reports/Final_LaTex/Report.aux
+Reports/Final_LaTex/Report.fdb_latexmk
+Reports/Final_LaTex/Report.log
+Reports/Final_LaTex/Report.pdf
+Reports/Final_LaTex/Report.synctex.gz
