@@ -2470,7 +2470,7 @@
 \interdisplaylinepenalty=2500
 
 % default allows section depth up to /paragraph
-\setcounter{secnumdepth}{4}
+\setcounter{secnumdepth}{2}
 
 % technotes do not allow /paragraph
 \ifCLASSOPTIONtechnote

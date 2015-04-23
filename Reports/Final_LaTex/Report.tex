@@ -1,11 +1,15 @@
-%\documentclass[12pt, onecolumn, conference]{IEEEtran}
-\documentclass[12pt, twocolumn, conference]{IEEEtran}
+\documentclass[12pt, onecolumn, conference]{IEEEtran}
+%\documentclass[12pt, twocolumn, conference]{IEEEtran}
+
+\usepackage[letterpaper, portrait, margin=1in]{geometry}
 
 \usepackage[]{algorithm2e}
 \usepackage{amsmath}
+\usepackage{color}
+\usepackage{fixltx2e}
 \usepackage[pdftex]{graphicx}
 \usepackage{listings}
-\usepackage{color}
+\usepackage[caption=false,font=normalsize,labelfont=sf,textfont=sf]{subfig}
 
 \definecolor{dkgreen}{rgb}{0,0.4,0}
 \definecolor{gray}{rgb}{0.5,0.5,0.5}
@@ -124,7 +128,7 @@ Several studies combine macro and crowd capture to refine their results. Rodrigu
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=2.5in]{noImage.jpg}
+\includegraphics[height=2.5in]{Screenshots/Density.png}
 \caption{Results of the density algorithm. Green for areas with low density, yellow for areas of medium density, and red for areas of high density.}
 \label{Density}
 \end{figure}
@@ -171,7 +175,11 @@ There are a few issues with using Optic Flow to calculate the flow of the crowd.
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=2.5in]{noImage.jpg}
+\subfloat{\includegraphics[width=2.5in]{Screenshots/OpticFlow_image_72.png}%
+\label{OF_first_case}}
+\hfil
+\subfloat{\includegraphics[width=2.5in]{Screenshots/OpticFlow_image_79.png}%
+\label{OF_second_case}}
 \caption{Results of the Optic Flow algorithm. Small lines point in the direction in which the pixels are found to be moving. In this image you can see that the hand is moving very slightly from left to right.}
 \label{Optic_Flow}
 \end{figure}
@@ -209,6 +217,17 @@ Next we have the user select two pairs of orthogonal lines in the affine rectifi
 
 \subsection{Tracking With Lucas-Kanade}
 
+\begin{figure}[!t]
+\centering
+\subfloat{\includegraphics[width=2.5in]{Screenshots/Capture1.JPG}%
+\label{LK_first_case}}
+\hfil
+\subfloat{\includegraphics[width=2.5in]{Screenshots/Capture2.JPG}%
+\label{LK_second_case}}
+\caption{Results of the Lucas-Kanade tracking algorithm.}
+\label{LK Tracking}
+\end{figure}
+
 One technique used to track people in a crowd was an implementation of Lucas-Kanade that tracked feature points. We begin by searching through the first frame in the video feed to find feature points. These feature points are areas in the image where corners are found. More specifically we used Shi-Tomasi corner detection. After we have our points we create a new track for each point.
 
 We then start the main loop of the tracking algorithm. The loop starts by grabbing the next frame in the video feed and then trying to find the new locations of the feature points with help from Optic Flow. OpenCV has a nice built in function that takes the points from the previous frame, p0, and tries to calculate the points current location, p1.
@@ -240,11 +259,9 @@ The tracks\_index array is first initialized with values 0 to n-1, where n is th
 \begin{tabular}{ | l | c | r | }
  \hline
  Array & Values\\
-  \hline\hline                    
+  \hline                 
   $st$ & $[1, 1, 1, 0, 1, 1]$\\
-  \hline
   $tracks\_index\ before\ update$ & $[0, 1, 2, 3, 4, 5]$ \\
-  \hline
   $tracks\_index\ after\ update$ & $[0, 1, 2, -1, 3, 4]$ \\
   \hline  
 \end{tabular}
@@ -259,9 +276,8 @@ After this step, if p1 has more points than the max value in tracks\_index, it m
 \begin{tabular}{ | l | c | r | }
  \hline
  Array & Values\\
-  \hline\hline                     
+  \hline           
   $tracks\_index\ before\ update$ & $[0, 1, 2, -1, 3, 4]$ \\
-  \hline
   $tracks\_index\ after\ update$ & $[0, 1, 2, -1, 3, 4, 5]$ \\
   \hline  
 \end{tabular}
@@ -277,7 +293,12 @@ To accurately track a person we need to be able to identify what objects in our 
 
 \begin{figure}[!t]
 \centering
-\includegraphics[width=2.5in]{noImage.jpg}
+\centering
+\subfloat{\includegraphics[width=2.5in]{Screenshots/Capture5.JPG}%
+\label{OB_first_case}}
+\hfil
+\subfloat{\includegraphics[width=2.5in]{Screenshots/Capture6.JPG}%
+\label{OB_second_case}}
 \caption{Results of our trained Haar Cascade that is detecting people. Video captured from the University of Alberta LRT station.}
 \label{Object_Detection}
 \end{figure}
@@ -286,16 +307,16 @@ To accurately track a person we need to be able to identify what objects in our 
 
 We were able to implement a tracking algorithm that utilizes the object detection described above. For each frame in the video we first run the object detection over the scene to find possible people to track. The object detection on its own gives us some false positives. In order to remove some of these false positives we combined the object detection with our density calculation. Now if a detected object is in an area of low density it is removed as there is most likely no one there. The main issue with this approach is we miss people who are standing still for an extended period of time. That being said we can still handle the case when a person just briefly stops.
 
-After we have our detected objects we try to find where these objects were in the last frame. For each detected object we compare the distance between the current object and the objects detected in the previous frame. If the distance is over a threshold we deem that the two detected objects do not belong to the same person. In the case when multiple objects from the current frame are possible matches to the same object in the previous frame we simply pick the pair with the smallest distance.
-
-We also store the path these objects take which we refer to as a track. After we have matched all the detected objects with the objects in the previous frame we add the new location to the objects corresponding track. If an object does not have a match then we deem it a new object and create a new track. However, if a track has no new objects added to it in the last n frames, where n is some number that the user decides is appropriate for the video, then the track is ended and the track can no longer be updated with new object locations. If a track is ended and is less than some threshold of frames then we remove the track as it is deemed a blip.
-
 \begin{figure}[!t]
 \centering
-\includegraphics[width=2.5in]{noImage.jpg}
+\includegraphics[height=2.5in]{Screenshots/OB_Tracking.png}
 \caption{Results of the tracking algorithm that utilizes the Object Detection.}
 \label{Tracking_Object_Detection}
 \end{figure}
+
+After we have our detected objects we try to find where these objects were in the last frame. For each detected object we compare the distance between the current object and the objects detected in the previous frame. If the distance is over a threshold we deem that the two detected objects do not belong to the same person. In the case when multiple objects from the current frame are possible matches to the same object in the previous frame we simply pick the pair with the smallest distance.
+
+We also store the path these objects take which we refer to as a track. After we have matched all the detected objects with the objects in the previous frame we add the new location to the objects corresponding track. If an object does not have a match then we deem it a new object and create a new track. However, if a track has no new objects added to it in the last n frames, where n is some number that the user decides is appropriate for the video, then the track is ended and the track can no longer be updated with new object locations. If a track is ended and is less than some threshold of frames then we remove the track as it is deemed a blip.
 
 \subsection{Output}
 
@@ -324,22 +345,36 @@ The second section of the output file contains pairs of floats representing X an
 
 \subsection{Unity}
 
+\begin{figure*}[!t]
+\centering
+\includegraphics[height=2.5in]{Screenshots/Capture4.JPG}
+\caption{Results of the Unity crowd playback data outputted from the tracking algorithms.}
+\label{Unity}
+\end{figure*}
+
 Using the Unity 5 engine, we are able to take our generated output file and and input its contents to a C\# script to simulate the track movements. Generic red-colored human models are used to represent each track of motion and are given a walking animation in order to simulate the crowd. In this revision of the script, the models are not programmed with any collision detection  logic to prevent them from walking thru one another if their respective coordinated overlap for a given frame as specified in the output file. The default background that the models are shown to walk on is a simple white plane. If users have access to a model (or wish to construct one) of the environment in which the original video footage was captured, it would be possible to have the human models simulate their movement within that environment model in order to achieve a result much visually similar to the original footage.
 
 The logic for creating and moving around the models in the crowd is found in the MovePedestrians.cs script. The script loads a generated output file as input in which the user selects and parses through the data. All track information is stored in a struct that contains the start frame, duration, and array of positions. In each update we look at all tracks and draw a person at the tracks current position. If the track does not have a frame corresponding to the current frame of simulation then the person that represents the track is hidden from the user. 
 
 As the simulation runs, it is possible for the user to navigate around the scene in 3D space using the keyboard. This offers enormous benefit in that the previously 2D scene shown on the initial video footage can now be seen from an infinite number of angles, allowing the user to better analyze the environment and how the crowd moves throughout. 
 
-\begin{figure}[!t]
-\centering
-\includegraphics[width=2.5in]{noImage.jpg}
-\caption{Results of the Unity crowd playback data outputted from the tracking algorithms.}
-\label{Unity}
-\end{figure}
-
 \section{Results}
 
+The density estimation can perform very well. However, there are a couple of downfalls. First it doesn’t perform as well if the camera is not in a top-down view. Secondarily it relies on the user to tweak the parameters until the results are desirable for the given video. The three parameters that the user can tweak are, the block size, decay rate, and growth rate. Finally it does not calculate the exact density as in how many people are in a certain area but instead it tries to determine whether or not the area at hand has a high density.
+
+The metric rectification process can in theory work perfectly. However, it relies on user input and because of this it is open to error. The main issues arise when the user is tasked with picking lines and there are no clear lines in the scene. Usually this issue presents itself when the scene has a very dense population that is covering the majority of the background. That being said we found that during our testing we were usually able to get an accurate rectified image and the algorithm adjusted will to our errors.
+
+We found that the tracking method that utilizes Lucas-Kanade performed best in dense crowds where there was little occlusion and only the peoples heads were visible. The main issues were caused because we were tracking feature points. First if a feature point became occluded for any reason it was lost or started tracking a different object. Secondarily an object could have many points tracking it which lead to multiple tracks outputted to the simulator which represented the same person. Finally the algorithm didn’t care if it was tracking a person or some other object such as a car.
+
+Unlike the Lucas-Kanade method the object detection tracking was better at handling the occlusion case. Of course if the object is never seen then it is impossible to be tracked, but for the case when a person was briefly lost the tracker was able to regain the position. However, we were using an object detector that only recognized a full body of the person. This means if a person was partly covered then the object detector could easily fail to detect the person. Because of this the object detection tracking worked best on scenes with a sparse population.
+
 \section{Discussion}
+
+In future iterations of the Unity simulation, though it would require modification to the core structure of the script, it could be possible to have the simulation run in real time. If the models representing the tracks were to be simulated with significantly improved AI including collision detection and perhaps some aspects of social crowd movements, the real time simulation could prove very advantageous. 
+
+A real time simulation would however also have its disadvantages. The tracking algorithm that utilizes Lucas-Kanade requires a couple iterations in order to produce the level of quality and accuracy shown currently. In this case it might be advantages to use the simulator information with the tracker instead of directly feeding the track information into the simulator. So the tracking algorithm could start the same, littering the scene with feature points. But once we have a track we can create a 3D model of the person in the simulator and in the next frame we could simulate where we think the person is heading based off the last known speed and direction. We can then compare the simulated position of the person with the tracked position. If the tracker is lost or performs an unrealistic motion we can put more weight to the simulated position.
+
+As mentioned before the object detection only works if the entire body of a person is visible. Some papers use multiple detectors or at least a head detector as the head is the most visible part of a person in a dense crowd.
 
 \begin{thebibliography}{1}
 
