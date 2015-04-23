@@ -2,6 +2,8 @@
 %\documentclass[12pt, twocolumn, conference]{IEEEtran}
 
 \usepackage[letterpaper, portrait, margin=1in]{geometry}
+\setlength{\parindent}{2em}
+\setlength{\parskip}{1em}
 
 \usepackage[]{algorithm2e}
 \usepackage{amsmath}
@@ -213,7 +215,7 @@ l_1 & l_2 & l_3
 
 Where m and m` are one set of parallel lines and n  and n` are the other set of parallel lines.
 
-Next we have the user select two pairs of orthogonal lines in the affine rectified image. Using the orthogonal lines we are able to retrieve a metric rectified image from the affine. Finally we allow the user to scale, rotate, and translate the results to allow them to get a better viewing experience. When the user is happy with the results they can output the matrix to the screen allowing them to use the homography matrix in the tracking algorithms described below.
+Next we have the user select two pairs of orthogonal lines in the affine rectified image. Using the orthogonal lines we are able to retrieve a metric rectified image from the affine image. Finally we allow the user to scale, rotate, and translate the results to allow them to get a better viewing experience. When the user is happy with the results they can output the matrix to the screen allowing them to use the homography matrix in the tracking algorithms described below.
 
 \subsection{Tracking With Lucas-Kanade}
 
@@ -289,7 +291,7 @@ After we have finished recording all the tracks we do a couple passes to clean u
 
 \subsection{Object Detection}
 
-To accurately track a person we need to be able to identify what objects in our scene are people.
+To accurately track individual people we need to be able to identify what objects in our scene are people. We were able find a data set of full body pedestrians and we trained on the data using OpenCV’s cascade trainer \cite{M. Enzweiler}. In the end we trained on 16000 positives and the training took a couple of days to run but after the data was trained OpenCV was able to detect people in real time. 
 
 \begin{figure}[!t]
 \centering
@@ -305,8 +307,6 @@ To accurately track a person we need to be able to identify what objects in our 
 
 \subsection{Tracking with Object Detection}
 
-We were able to implement a tracking algorithm that utilizes the object detection described above. For each frame in the video we first run the object detection over the scene to find possible people to track. The object detection on its own gives us some false positives. In order to remove some of these false positives we combined the object detection with our density calculation. Now if a detected object is in an area of low density it is removed as there is most likely no one there. The main issue with this approach is we miss people who are standing still for an extended period of time. That being said we can still handle the case when a person just briefly stops.
-
 \begin{figure}[!t]
 \centering
 \includegraphics[height=2.5in]{Screenshots/OB_Tracking.png}
@@ -314,9 +314,11 @@ We were able to implement a tracking algorithm that utilizes the object detectio
 \label{Tracking_Object_Detection}
 \end{figure}
 
+We were able to implement a tracking algorithm that utilizes the object detection described above. For each frame in the video we first run the object detection over the scene to find possible people to track. The object detection on its own gives us some false positives. In order to remove some of these false positives we combined the object detection with our density calculation. Now if a detected object is in an area of low density it is removed as there is most likely no one there. The main issue with this approach is we miss people who are standing still for an extended period of time. That being said we can still handle the case when a person just briefly stops.
+
 After we have our detected objects we try to find where these objects were in the last frame. For each detected object we compare the distance between the current object and the objects detected in the previous frame. If the distance is over a threshold we deem that the two detected objects do not belong to the same person. In the case when multiple objects from the current frame are possible matches to the same object in the previous frame we simply pick the pair with the smallest distance.
 
-We also store the path these objects take which we refer to as a track. After we have matched all the detected objects with the objects in the previous frame we add the new location to the objects corresponding track. If an object does not have a match then we deem it a new object and create a new track. However, if a track has no new objects added to it in the last n frames, where n is some number that the user decides is appropriate for the video, then the track is ended and the track can no longer be updated with new object locations. If a track is ended and is less than some threshold of frames then we remove the track as it is deemed a blip.
+We also store the path these objects take which we refer to as a track. After we have matched all the detected objects with the objects in the previous frame we add the object's new location to the objects corresponding track. If an object does not have a match then we deem it a new object and create a new track. However, if a track has no new objects added to it in the last n frames, where n is some number that the user decides is appropriate for the video, then the track is ended and the track can no longer be updated with new object locations. If a track is ended and is less than some threshold of frames then we remove the track as it is deemed an error.
 
 \subsection{Output}
 
@@ -372,7 +374,7 @@ Unlike the Lucas-Kanade method the object detection tracking was better at handl
 
 In future iterations of the Unity simulation, though it would require modification to the core structure of the script, it could be possible to have the simulation run in real time. If the models representing the tracks were to be simulated with significantly improved AI including collision detection and perhaps some aspects of social crowd movements, the real time simulation could prove very advantageous. 
 
-A real time simulation would however also have its disadvantages. The tracking algorithm that utilizes Lucas-Kanade requires a couple iterations in order to produce the level of quality and accuracy shown currently. In this case it might be advantages to use the simulator information with the tracker instead of directly feeding the track information into the simulator. So the tracking algorithm could start the same, littering the scene with feature points. But once we have a track we can create a 3D model of the person in the simulator and in the next frame we could simulate where we think the person is heading based off the last known speed and direction. We can then compare the simulated position of the person with the tracked position. If the tracker is lost or performs an unrealistic motion we can put more weight to the simulated position.
+A real time simulation would however also have its disadvantages. The tracking algorithm that utilizes Lucas-Kanade requires a couple iterations in order to produce the level of quality and accuracy shown currently. In this case it might be advantages to use the simulator information with the tracker instead of directly feeding the track information into the simulator. So the tracking algorithm would start the same, littering the scene with feature points. But once we have a track we can create a 3D model of the person in the simulator and in the next frame we could simulate where we think the person is heading based off the last known speed and direction. We can then compare the simulated position of the person with the tracked position. If the tracker is lost or performs an unrealistic motion we can put more weight to the simulated position.
 
 As mentioned before the object detection only works if the entire body of a person is visible. Some papers use multiple detectors or at least a head detector as the head is the most visible part of a person in a dense crowd.
 
@@ -446,6 +448,9 @@ G. Shu, A. Dehghan, O. Oreifej, E. Hand and M. Shah, ‘Part-based Multiple-Pers
 
 \bibitem{P. Viola}
 P. Viola and M. Jones, 'Rapid Object Detection using a Boosted Cascade of Simple Features Computer Vision and Pattern Recognition Proceedings', \textit{2001 IEEE Computer Society Conference}, vol. 1: I-511 – I-518, 2001.
+
+\bibitem{M. Enzweiler}
+M. Enzweiler and D. M. Gavrila. ‘Monocular Pedestrian Detection: Survey and Experiments’. \textit{IEEE Trans. on Pattern Analysis and Machine Intelligence}, 17 Oct. 2008. [DataSet] http://www.lookingatpeople.com/download-daimler-ped-det-benchmark/index.html
 
 \end{thebibliography}
  
